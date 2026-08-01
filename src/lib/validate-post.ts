@@ -1,6 +1,7 @@
 /** Regole SEO e GEO applicate in scrittura. */
 export type PostInput = {
   slug?: string;
+  meta_title?: string;
   title?: string;
   description?: string;
   body?: string;
@@ -30,7 +31,9 @@ export function validatePost(p: PostInput, opts: { publishing: boolean }): Issue
   else if (p.slug.length > 70) warn("slug", "Slug oltre 70 caratteri: accorcialo.");
 
   if (!p.title) err("title", "Titolo obbligatorio.");
-  else if (p.title.length > 65) warn("title", `Titolo di ${p.title.length} caratteri: oltre 65 Google lo tronca.`);
+  const titoloSerp = p.meta_title ?? p.title;
+  if (titoloSerp && titoloSerp.length > 65)
+    warn("title", `Titolo SERP di ${titoloSerp.length} caratteri: oltre 65 Google lo tronca. Usa meta_title per accorciarlo.`);
 
   if (!p.description) err("description", "Meta description obbligatoria.");
   else if (p.description.length < 110 || p.description.length > 165)
