@@ -69,14 +69,17 @@ export default async function BlogIndexPage() {
                     <span aria-hidden="true">&middot;</span>
                     <span>{post.readingMinutes} min di lettura</span>
                   </div>
-                  <h2 className="text-xl md:text-2xl font-semibold text-white group-hover:text-primary transition-colors">
+                  <h2 className="text-xl md:text-2xl font-semibold text-white group-hover:text-white transition-colors">
                     {post.title}
                   </h2>
                   <p className="mt-2 text-neutral-400 leading-relaxed">{post.description}</p>
                   {post.tags.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {post.tags.map((tag) => (
-                        <span key={tag} className="rounded border border-border px-2 py-0.5 text-xs text-neutral-500">{tag}</span>
+                    <div className="mt-3 flex flex-wrap items-center gap-x-2.5 text-[11px] uppercase tracking-[0.14em] text-neutral-600">
+                      {post.tags.slice(0, 3).map((tag, i) => (
+                        <span key={tag} className="flex items-center gap-2.5">
+                          {i > 0 && <span aria-hidden="true" className="text-neutral-800">/</span>}
+                          {tag}
+                        </span>
                       ))}
                     </div>
                   )}

@@ -120,10 +120,10 @@ export default async function BlogPostPage({ params }: Props) {
         <article id="articolo">
           <header className="mb-12">
             {post.tags.length > 0 && (
-              <div className="mb-4 flex flex-wrap gap-2">
-                {post.tags.slice(0, 3).map((t) => (
-                  <span key={t}
-                    className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary">
+              <div className="mb-5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] uppercase tracking-[0.14em] text-neutral-500">
+                {post.tags.slice(0, 3).map((t, i) => (
+                  <span key={t} className="flex items-center gap-2.5">
+                    {i > 0 && <span aria-hidden="true" className="text-neutral-700">/</span>}
                     {t}
                   </span>
                 ))}
@@ -141,14 +141,14 @@ export default async function BlogPostPage({ params }: Props) {
           </header>
 
           {post.keyTakeaways.length > 0 && (
-            <section className="mb-12 rounded-xl border border-border bg-gradient-to-b from-card to-black p-6 md:p-8">
-              <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-primary">
+            <section className="mb-14 border-y border-border py-8">
+              <h2 className="mb-5 text-[11px] font-medium uppercase tracking-[0.16em] text-neutral-500">
                 In sintesi
               </h2>
-              <ul className="space-y-3">
+              <ul className="space-y-3.5">
                 {post.keyTakeaways.map((t, i) => (
-                  <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-neutral-300">
-                    <span aria-hidden="true" className="mt-2 h-1 w-1 shrink-0 rounded-full bg-primary" />
+                  <li key={i} className="flex gap-4 text-[15px] leading-relaxed text-neutral-300">
+                    <span aria-hidden="true" className="mt-[0.7em] h-px w-4 shrink-0 bg-neutral-700" />
                     <span>{t}</span>
                   </li>
                 ))}
@@ -197,15 +197,20 @@ export default async function BlogPostPage({ params }: Props) {
           )}
         </article>
 
-        <section className="mt-16 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 to-transparent p-8">
-          <h2 className="text-xl font-semibold text-white">Hai un progetto in mente?</h2>
-          <p className="mt-3 leading-relaxed text-neutral-400">
-            ELEVIACOM progetta chatbot, automazioni e agenti AI su misura per PMI italiane.
+        <section className="mt-20 border-t border-border pt-10">
+          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-neutral-600">
+            ELEVIACOM
+          </p>
+          <p className="mt-4 max-w-xl text-lg leading-relaxed text-neutral-300">
+            Progettiamo chatbot, automazioni e agenti AI su misura per PMI italiane.
             La valutazione iniziale è gratuita.
           </p>
           <Link href="/consulenza"
-            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90">
-            Richiedi una consulenza <span aria-hidden="true">&rarr;</span>
+            className="group mt-6 inline-flex items-center gap-2 border-b border-neutral-700 pb-1 text-sm text-white transition-colors hover:border-white">
+            Richiedi una consulenza
+            <span aria-hidden="true" className="transition-transform duration-200 group-hover:translate-x-1">
+              &rarr;
+            </span>
           </Link>
         </section>
 
