@@ -101,18 +101,21 @@ export default async function BlogPostPage({ params }: Props) {
 
       {/* Copertina a tutta larghezza, con sfumatura verso il nero */}
       {post.cover && (
-        <div className="relative h-[38vh] min-h-[260px] w-full md:h-[46vh]">
+        <div className="relative h-[32vh] min-h-[220px] w-full overflow-hidden md:h-[40vh]">
           <Image src={post.cover} alt={post.coverAlt ?? post.title} fill priority
             sizes="100vw" className="object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black" />
         </div>
       )}
 
-      <div className="mx-auto max-w-3xl px-6 pb-24 -mt-24 relative md:-mt-32">
+      <div className="mx-auto w-full max-w-6xl px-6 pb-24 pt-10">
         <Link href="/blog"
           className="mb-8 inline-block text-sm text-neutral-500 transition-colors hover:text-white">
           &larr; Torna al blog
         </Link>
+
+        <div className="gap-14 xl:grid xl:grid-cols-[minmax(0,1fr)_15rem]">
+          <div className="mx-auto w-full min-w-0 max-w-3xl xl:mx-0">
 
         <article id="articolo">
           <header className="mb-12">
@@ -153,7 +156,7 @@ export default async function BlogPostPage({ params }: Props) {
             </section>
           )}
 
-          <TableOfContents items={post.toc} />
+          <TableOfContents items={post.toc} variant="mobile" />
 
           <div className="blog-prose" dangerouslySetInnerHTML={{ __html: post.html }} />
 
@@ -229,6 +232,15 @@ export default async function BlogPostPage({ params }: Props) {
             </div>
           </section>
         )}
+
+          </div>
+
+          <aside className="hidden xl:block">
+            <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pb-8">
+              <TableOfContents items={post.toc} variant="desktop" />
+            </div>
+          </aside>
+        </div>
       </div>
     </main>
   );

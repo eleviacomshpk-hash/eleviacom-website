@@ -2,7 +2,9 @@
 import { useEffect, useState } from "react";
 import type { TocItem } from "@/lib/blog";
 
-export function TableOfContents({ items }: { items: TocItem[] }) {
+type Props = { items: TocItem[]; variant: "mobile" | "desktop" };
+
+export function TableOfContents({ items, variant }: Props) {
   const [active, setActive] = useState<string>("");
   const [open, setOpen] = useState(false);
 
@@ -15,7 +17,7 @@ export function TableOfContents({ items }: { items: TocItem[] }) {
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
         if (visible[0]) setActive(visible[0].target.id);
       },
-      { rootMargin: "-88px 0px -70% 0px", threshold: 0 }
+      { rootMargin: "-96px 0px -70% 0px", threshold: 0 }
     );
     items.forEach((i) => {
       const el = document.getElementById(i.id);
@@ -30,7 +32,7 @@ export function TableOfContents({ items }: { items: TocItem[] }) {
     e.preventDefault();
     const el = document.getElementById(id);
     if (!el) return;
-    window.scrollTo({ top: el.offsetTop - 88, behavior: "smooth" });
+    window.scrollTo({ top: el.offsetTop - 96, behavior: "smooth" });
     history.replaceState(null, "", `#${id}`);
     setOpen(false);
   };
@@ -56,34 +58,32 @@ export function TableOfContents({ items }: { items: TocItem[] }) {
     </ul>
   );
 
-  return (
-    <>
-      {/* Mobile: pannello richiudibile */}
-      <div className="mb-10 rounded-lg border border-border bg-card xl:hidden">
-        <button
-          onClick={() => setOpen(!open)}
-          aria-expanded={open}
-          className="flex w-full items-center justify-between px-5 py-3.5 text-left"
-        >
-          <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
-            Indice dell&apos;articolo
-          </span>
-          <span className={"text-neutral-500 transition-transform " + (open ? "rotate-180" : "")}>
-            &#9662;
-          </span>
-        </button>
-        {open && <div className="border-t border-border px-5 py-4">{list}</div>}
-      </div>
+  if (variant === "desktop") {
+    return (
+      <>
+        <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-neutral-600">
+          In questo articolo
+        </p>
+        <nav>{list}</nav>
+      </>
+    );
+  }
 
-      {/* Desktop: colonna laterale fissa */}
-      <aside className="hidden xl:block">
-        <div className="fixed top-28 w-60">
-          <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-neutral-600">
-            In questo articolo
-          </p>
-          <nav>{list}</nav>
-        </div>
-      </aside>
-    </>
+  return (
+    <div className="mb-10 rounded-lg border border-border bg-card xl:hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between px-5 py-3.5 text-left"
+      >
+        <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+          Indice dell&apos;articolo
+        </span>
+        <span className={"text-neutral-500 transition-transform " + (open ? "rotate-180" : "")}>
+          &#9662;
+        </span>
+      </button>
+      {open && <div className="border-t border-border px-5 py-4">{list}</div>}
+    </div>
   );
 }
