@@ -6,3 +6,5 @@ node_modules
 .DS_Store
 reference/
 public/hero-visual_thumb.jpeg
+.vercel
+.deploy-check
