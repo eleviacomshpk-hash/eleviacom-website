@@ -358,7 +358,8 @@ const siteConfig = {
       links: [
         { id: 1, title: "Chi Siamo", url: "/chi-siamo" },
         { id: 2, title: "Consulenza", url: "/consulenza" },
-        { id: 3, title: "Contatti", url: "/contatti" },
+        { id: 3, title: "Blog", url: "/blog" },
+        { id: 4, title: "Contatti", url: "/contatti" },
       ],
     },
   ],
