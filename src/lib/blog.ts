@@ -31,7 +31,38 @@ export type PostMeta = {
   readingMinutes: number;
 };
 
-export type Post = PostMeta & { html: string };
+export type TocItem = { id: string; text: string; level: 2 | 3 };
+export type Post = PostMeta & { html: string; toc: TocItem[] };
+
+function slugifyHeading(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .slice(0, 60);
+}
+
+/** Aggiunge un id a ogni h2/h3 e restituisce l indice dei contenuti. */
+function withHeadingIds(html: string): { html: string; toc: TocItem[] } {
+  const toc: TocItem[] = [];
+  const used = new Set<string>();
+  const out = html.replace(
+    /<h([23])>([\s\S]*?)<\/h\1>/g,
+    (_m, lvl: string, inner: string) => {
+      const text = inner.replace(/<[^>]+>/g, "").trim();
+      let id = slugifyHeading(text) || `sezione-${toc.length + 1}`;
+      let n = 2;
+      while (used.has(id)) id = `${id}-${n++}`;
+      used.add(id);
+      toc.push({ id, text, level: Number(lvl) as 2 | 3 });
+      return `<h${lvl} id="${id}">${inner}</h${lvl}>`;
+    }
+  );
+  return { html: out, toc };
+}
 
 type Row = Record<string, unknown>;
 
@@ -83,7 +114,8 @@ export async function getPost(slug: string): Promise<Post | null> {
     .use(remarkGfm)
     .use(remarkHtml)
     .process(String(data.body ?? ""));
-  return { ...toMeta(data), html: String(processed) };
+  const { html, toc } = withHeadingIds(String(processed));
+  return { ...toMeta(data), html, toc };
 }
 
 export async function getSiteConfig<T = unknown>(key: string): Promise<T | null> {

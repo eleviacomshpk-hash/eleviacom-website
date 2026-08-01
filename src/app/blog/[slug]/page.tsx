@@ -3,6 +3,8 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getAllPostsMeta, getPost, formatDate, isoDay, SITE_URL } from "@/lib/blog";
+import { ReadingProgress } from "@/components/blog/reading-progress";
+import { TableOfContents } from "@/components/blog/table-of-contents";
 
 export const revalidate = 300;
 export const dynamicParams = true;
@@ -30,9 +32,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       type: "article", url, siteName: "ELEVIACOM", locale: "it_IT",
       title: post.title, description: post.description,
-      publishedTime: post.publishedAt, modifiedTime: post.updatedAt,
-      tags: post.tags,
-      images: img ? [{ url: img, alt: post.coverAlt ?? post.title }] : undefined,
+      publishedTime: post.publishedAt, modifiedTime: post.updatedAt, tags: post.tags,
+      images: img ? [{ url: img, width: 1600, height: 900, alt: post.coverAlt ?? post.title }] : undefined,
     },
     twitter: {
       card: "summary_large_image", title: post.title,
@@ -45,6 +46,14 @@ export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
   const post = await getPost(slug);
   if (!post) notFound();
+
+  const all = await getAllPostsMeta();
+  const related = all
+    .filter((p) => p.slug !== post.slug)
+    .map((p) => ({ p, score: p.tags.filter((t) => post.tags.includes(t)).length }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map((x) => x.p);
 
   const url = `${SITE_URL}/blog/${post.slug}`;
   const graph: Record<string, unknown>[] = [
@@ -83,54 +92,86 @@ export default async function BlogPostPage({ params }: Props) {
       })),
     });
   }
-  const jsonLd = { "@context": "https://schema.org", "@graph": graph };
 
   return (
     <main className="min-h-screen bg-black text-neutral-300">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <div className="mx-auto max-w-3xl px-6 py-16 md:py-24">
-        <Link href="/blog" className="text-sm text-neutral-500 hover:text-white transition-colors mb-8 inline-block">
+      <ReadingProgress />
+      <script type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@graph": graph }) }} />
+
+      {/* Copertina a tutta larghezza, con sfumatura verso il nero */}
+      {post.cover && (
+        <div className="relative h-[38vh] min-h-[260px] w-full md:h-[46vh]">
+          <Image src={post.cover} alt={post.coverAlt ?? post.title} fill priority
+            sizes="100vw" className="object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black" />
+        </div>
+      )}
+
+      <div className="mx-auto max-w-3xl px-6 pb-24 -mt-24 relative md:-mt-32">
+        <Link href="/blog"
+          className="mb-8 inline-block text-sm text-neutral-500 transition-colors hover:text-white">
           &larr; Torna al blog
         </Link>
 
-        <article>
-          <header className="mb-10">
-            <div className="flex items-center gap-3 text-xs text-neutral-500 mb-3">
+        <article id="articolo">
+          <header className="mb-12">
+            {post.tags.length > 0 && (
+              <div className="mb-4 flex flex-wrap gap-2">
+                {post.tags.slice(0, 3).map((t) => (
+                  <span key={t}
+                    className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary">
+                    {t}
+                  </span>
+                ))}
+              </div>
+            )}
+            <h1 className="text-3xl font-bold leading-[1.15] text-white md:text-5xl">{post.title}</h1>
+            <p className="mt-5 text-lg leading-relaxed text-neutral-400">{post.description}</p>
+            <div className="mt-6 flex items-center gap-3 border-t border-border pt-5 text-xs text-neutral-500">
+              <span className="font-medium text-neutral-400">{post.author}</span>
+              <span aria-hidden="true">&middot;</span>
               <time dateTime={isoDay(post.publishedAt)}>{formatDate(post.publishedAt)}</time>
               <span aria-hidden="true">&middot;</span>
               <span>{post.readingMinutes} min di lettura</span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">{post.title}</h1>
-            <p className="text-neutral-400 leading-relaxed">{post.description}</p>
           </header>
 
-          {post.cover && (
-            <figure className="relative mb-10 aspect-[16/9] w-full overflow-hidden rounded-lg border border-border">
-              <Image src={post.cover} alt={post.coverAlt ?? post.title} fill priority
-                sizes="(max-width: 768px) 100vw, 768px" className="object-cover" />
-            </figure>
-          )}
-
           {post.keyTakeaways.length > 0 && (
-            <section className="mb-10 rounded-lg border border-border bg-card p-6">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500 mb-3">In sintesi</h2>
-              <ul className="list-disc space-y-2 pl-5 text-neutral-300">
-                {post.keyTakeaways.map((t, i) => (<li key={i}>{t}</li>))}
+            <section className="mb-12 rounded-xl border border-border bg-gradient-to-b from-card to-black p-6 md:p-8">
+              <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-primary">
+                In sintesi
+              </h2>
+              <ul className="space-y-3">
+                {post.keyTakeaways.map((t, i) => (
+                  <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-neutral-300">
+                    <span aria-hidden="true" className="mt-2 h-1 w-1 shrink-0 rounded-full bg-primary" />
+                    <span>{t}</span>
+                  </li>
+                ))}
               </ul>
             </section>
           )}
 
+          <TableOfContents items={post.toc} />
+
           <div className="blog-prose" dangerouslySetInnerHTML={{ __html: post.html }} />
 
           {post.faq.length > 0 && (
-            <section className="mt-16">
-              <h2 className="text-2xl font-semibold text-white mb-6">Domande frequenti</h2>
-              <div className="space-y-6">
+            <section className="mt-20 border-t border-border pt-12">
+              <h2 className="mb-8 text-2xl font-semibold text-white">Domande frequenti</h2>
+              <div className="divide-y divide-border">
                 {post.faq.map((f, i) => (
-                  <div key={i}>
-                    <h3 className="text-base font-semibold text-white mb-2">{f.question}</h3>
-                    <p className="text-neutral-400 leading-relaxed">{f.answer}</p>
-                  </div>
+                  <details key={i} className="group py-5" open={i === 0}>
+                    <summary className="flex cursor-pointer list-none items-start justify-between gap-4 text-base font-medium text-white">
+                      <span>{f.question}</span>
+                      <span aria-hidden="true"
+                        className="mt-1 shrink-0 text-neutral-600 transition-transform group-open:rotate-45">
+                        +
+                      </span>
+                    </summary>
+                    <p className="mt-3 leading-relaxed text-neutral-400">{f.answer}</p>
+                  </details>
                 ))}
               </div>
             </section>
@@ -138,12 +179,12 @@ export default async function BlogPostPage({ params }: Props) {
 
           {post.sources.length > 0 && (
             <section className="mt-14">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500 mb-3">Fonti</h2>
+              <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-neutral-600">Fonti</h2>
               <ul className="space-y-2 text-sm">
                 {post.sources.map((s, i) => (
                   <li key={i}>
                     <a href={s.url} target="_blank" rel="noopener noreferrer nofollow"
-                      className="text-neutral-400 hover:text-white underline underline-offset-4 transition-colors">
+                      className="text-neutral-400 underline underline-offset-4 transition-colors hover:text-white">
                       {s.title}
                     </a>
                   </li>
@@ -153,14 +194,41 @@ export default async function BlogPostPage({ params }: Props) {
           )}
         </article>
 
-        <div className="mt-16 border-t border-border pt-8">
-          <p className="text-neutral-400 leading-relaxed">
-            ELEVIACOM progetta chatbot, automazioni e agenti AI su misura per PMI italiane.{" "}
-            <Link href="/consulenza" className="text-white hover:text-primary transition-colors underline underline-offset-4">
-              Richiedi una consulenza
-            </Link>.
+        <section className="mt-16 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 to-transparent p-8">
+          <h2 className="text-xl font-semibold text-white">Hai un progetto in mente?</h2>
+          <p className="mt-3 leading-relaxed text-neutral-400">
+            ELEVIACOM progetta chatbot, automazioni e agenti AI su misura per PMI italiane.
+            La valutazione iniziale è gratuita.
           </p>
-        </div>
+          <Link href="/consulenza"
+            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90">
+            Richiedi una consulenza <span aria-hidden="true">&rarr;</span>
+          </Link>
+        </section>
+
+        {related.length > 0 && (
+          <section className="mt-16 border-t border-border pt-12">
+            <h2 className="mb-8 text-xs font-semibold uppercase tracking-wider text-neutral-600">
+              Continua a leggere
+            </h2>
+            <div className="grid gap-6 sm:grid-cols-3">
+              {related.map((r) => (
+                <Link key={r.slug} href={`/blog/${r.slug}`} className="group block">
+                  {r.cover && (
+                    <div className="relative mb-3 aspect-[16/10] overflow-hidden rounded-lg border border-border">
+                      <Image src={r.cover} alt={r.coverAlt ?? r.title} fill sizes="33vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                    </div>
+                  )}
+                  <h3 className="text-sm font-medium leading-snug text-neutral-300 transition-colors group-hover:text-white">
+                    {r.title}
+                  </h3>
+                  <p className="mt-1 text-xs text-neutral-600">{r.readingMinutes} min</p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </main>
   );
