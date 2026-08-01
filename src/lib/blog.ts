@@ -1,74 +1,107 @@
-import fs from "node:fs";
-import path from "node:path";
-import matter from "gray-matter";
 import { remark } from "remark";
 import remarkGfm from "remark-gfm";
 import remarkHtml from "remark-html";
+import { supabase } from "@/lib/supabase";
 
 export const SITE_URL = "https://www.eleviacom.space";
-export const BLOG_NAME = "Blog ELEVIACOM";
 
-const BLOG_DIR = path.join(process.cwd(), "src/content/blog");
+export type FaqItem = { question: string; answer: string };
+export type Source = { title: string; url: string };
 
 export type PostMeta = {
   slug: string;
   title: string;
   description: string;
-  date: string;
-  updated?: string;
   author: string;
   tags: string[];
-  draft: boolean;
-  readingMinutes: number;
+  publishedAt: string;
+  updatedAt: string;
   cover?: string;
   coverAlt?: string;
+  metaTitle?: string;
+  canonical?: string;
+  keywords: string[];
+  noindex: boolean;
+  summary?: string;
+  keyTakeaways: string[];
+  faq: FaqItem[];
+  sources: Source[];
+  entities: string[];
+  schemaType: string;
+  readingMinutes: number;
 };
 
 export type Post = PostMeta & { html: string };
 
-function listFiles(): string[] {
-  if (!fs.existsSync(BLOG_DIR)) return [];
-  return fs.readdirSync(BLOG_DIR).filter((f) => f.endsWith(".md"));
-}
+type Row = Record<string, unknown>;
 
-function parse(file: string) {
-  const raw = fs.readFileSync(path.join(BLOG_DIR, file), "utf8");
-  const { data, content } = matter(raw);
-  const words = content.trim().split(/\s+/).length;
-  const meta: PostMeta = {
-    slug: String(data.slug || file.replace(/\.md$/, "")),
-    title: String(data.title || "Senza titolo"),
-    description: String(data.description || ""),
-    date: String(data.date || new Date().toISOString().slice(0, 10)),
-    updated: data.updated ? String(data.updated) : undefined,
-    author: String(data.author || "ELEVIACOM"),
-    tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
-    draft: Boolean(data.draft),
-    cover: data.cover ? String(data.cover) : undefined,
-    coverAlt: data.coverAlt ? String(data.coverAlt) : undefined,
-    readingMinutes: Math.max(1, Math.round(words / 200)),
+function toMeta(r: Row): PostMeta {
+  const body = String(r.body ?? "");
+  return {
+    slug: String(r.slug),
+    title: String(r.title),
+    description: String(r.description ?? ""),
+    author: String(r.author ?? "ELEVIACOM"),
+    tags: (r.tags as string[]) ?? [],
+    publishedAt: String(r.published_at ?? r.created_at ?? ""),
+    updatedAt: String(r.updated_at ?? r.published_at ?? ""),
+    cover: (r.cover as string) ?? undefined,
+    coverAlt: (r.cover_alt as string) ?? undefined,
+    metaTitle: (r.meta_title as string) ?? undefined,
+    canonical: (r.canonical as string) ?? undefined,
+    keywords: (r.keywords as string[]) ?? [],
+    noindex: Boolean(r.noindex),
+    summary: (r.summary as string) ?? undefined,
+    keyTakeaways: (r.key_takeaways as string[]) ?? [],
+    faq: (r.faq as FaqItem[]) ?? [],
+    sources: (r.sources as Source[]) ?? [],
+    entities: (r.entities as string[]) ?? [],
+    schemaType: String(r.schema_type ?? "BlogPosting"),
+    readingMinutes: Math.max(1, Math.round(body.trim().split(/\s+/).length / 200)),
   };
-  return { meta, content };
 }
 
-export function getAllPostsMeta(): PostMeta[] {
-  return listFiles()
-    .map((f) => parse(f).meta)
-    .filter((m) => !m.draft)
-    .sort((a, b) => (a.date < b.date ? 1 : -1));
+export async function getAllPostsMeta(): Promise<PostMeta[]> {
+  const { data, error } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("status", "published")
+    .order("published_at", { ascending: false });
+  if (error || !data) return [];
+  return data.map(toMeta);
 }
 
 export async function getPost(slug: string): Promise<Post | null> {
-  const file = listFiles().find((f) => parse(f).meta.slug === slug);
-  if (!file) return null;
-  const { meta, content } = parse(file);
-  if (meta.draft) return null;
-  const processed = await remark().use(remarkGfm).use(remarkHtml).process(content);
-  return { ...meta, html: String(processed) };
+  const { data, error } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("slug", slug)
+    .eq("status", "published")
+    .maybeSingle();
+  if (error || !data) return null;
+  const processed = await remark()
+    .use(remarkGfm)
+    .use(remarkHtml)
+    .process(String(data.body ?? ""));
+  return { ...toMeta(data), html: String(processed) };
+}
+
+export async function getSiteConfig<T = unknown>(key: string): Promise<T | null> {
+  const { data } = await supabase
+    .from("site_config")
+    .select("value")
+    .eq("key", key)
+    .maybeSingle();
+  return (data?.value as T) ?? null;
 }
 
 export function formatDate(iso: string): string {
-  return new Date(iso + "T00:00:00Z").toLocaleDateString("it-IT", {
-    day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
+  if (!iso) return "";
+  return new Date(iso).toLocaleDateString("it-IT", {
+    day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Rome",
   });
+}
+
+export function isoDay(iso: string): string {
+  return iso ? new Date(iso).toISOString().slice(0, 10) : "";
 }
