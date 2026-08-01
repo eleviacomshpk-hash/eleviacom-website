@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getAllPostsMeta, getPost, formatDate, SITE_URL } from "@/lib/blog";
@@ -30,11 +31,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       publishedTime: post.date,
       modifiedTime: post.updated ?? post.date,
       tags: post.tags,
+      images: post.cover ? [{ url: `${SITE_URL}${post.cover}`, alt: post.coverAlt ?? post.title }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
       title: post.title,
       description: post.description,
+      images: post.cover ? [`${SITE_URL}${post.cover}`] : undefined,
     },
   };
 }
@@ -61,6 +64,7 @@ export default async function BlogPostPage({ params }: Props) {
       "@type": "WebPage",
       "@id": `${SITE_URL}/blog/${post.slug}`,
     },
+    image: post.cover ? [`${SITE_URL}${post.cover}`] : undefined,
     inLanguage: "it-IT",
     keywords: post.tags.join(", "),
   };
@@ -93,6 +97,19 @@ export default async function BlogPostPage({ params }: Props) {
               {post.description}
             </p>
           </header>
+
+          {post.cover && (
+            <figure className="relative mb-10 aspect-[16/9] w-full overflow-hidden rounded-lg border border-border">
+              <Image
+                src={post.cover}
+                alt={post.coverAlt ?? post.title}
+                fill
+                priority
+                sizes="(max-width: 768px) 100vw, 768px"
+                className="object-cover"
+              />
+            </figure>
+          )}
 
           <div
             className="blog-prose"

@@ -20,6 +20,8 @@ export type PostMeta = {
   tags: string[];
   draft: boolean;
   readingMinutes: number;
+  cover?: string;
+  coverAlt?: string;
 };
 
 export type Post = PostMeta & { html: string };
@@ -42,6 +44,8 @@ function parse(file: string) {
     author: String(data.author || "ELEVIACOM"),
     tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
     draft: Boolean(data.draft),
+    cover: data.cover ? String(data.cover) : undefined,
+    coverAlt: data.coverAlt ? String(data.coverAlt) : undefined,
     readingMinutes: Math.max(1, Math.round(words / 200)),
   };
   return { meta, content };

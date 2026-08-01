@@ -167,3 +167,23 @@ input::placeholder {
   text-align: left;
 }
 .blog-prose th { color: #ffffff; font-weight: 600; }
+
+/* Blog: immagini e figure negli articoli */
+.blog-prose img {
+  width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  border: 1px solid #2c2c2e;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+.blog-prose figure { margin-top: 2rem; }
+.blog-prose figure img { margin-top: 0; }
+.blog-prose figcaption,
+.blog-prose img + em {
+  display: block;
+  color: #8e8e93;
+  font-size: 0.875rem;
+  text-align: center;
+  font-style: normal;
+}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { getAllPostsMeta, formatDate, SITE_URL } from "@/lib/blog";
 
@@ -45,6 +46,17 @@ export default function BlogIndexPage() {
             {posts.map((post) => (
               <article key={post.slug} className="group">
                 <Link href={`/blog/${post.slug}`} className="block">
+                  {post.cover && (
+                    <div className="relative mb-4 aspect-[16/9] w-full overflow-hidden rounded-lg border border-border">
+                      <Image
+                        src={post.cover}
+                        alt={post.coverAlt ?? post.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 768px"
+                        className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                      />
+                    </div>
+                  )}
                   <div className="flex items-center gap-3 text-xs text-neutral-500 mb-2">
                     <time dateTime={post.date}>{formatDate(post.date)}</time>
                     <span aria-hidden="true">&middot;</span>
