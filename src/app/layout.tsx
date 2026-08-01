@@ -5,6 +5,10 @@ export const metadata: Metadata = {
   title: "ELEVIACOM — Studio di Architettura AI per PMI Italiane | Chatbot, Automazioni, Agenti AI",
   description: "ELEVIACOM progetta chatbot AI, automazioni e agenti intelligenti su misura per PMI italiane. Consulenza gratuita. Soluzioni AI da €2.000.",
   keywords: "agenzia AI Italia, chatbot AI per PMI, automazioni AI per aziende, dipendente AI, soluzioni AI per PMI italiane, consulenza AI per imprese",
+  metadataBase: new URL("https://www.eleviacom.space"),
+  verification: {
+    google: "eEl-D6vG2kOw7OjCStGkfKEXLP9YzVgnKL2CaGzRQFY",
+  },
 };
 
 export default function RootLayout({
