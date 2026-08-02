@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { TOOLS, categorieToolAttive } from "@/lib/tools";
-import { MARCHI } from "@/lib/marchi";
+import { Apertura, Coda } from "@/components/hub/pezzi";
 import { ElencoTool } from "@/components/hub/elenchi";
-import { Briciole, Iscrizione } from "@/components/hub/pezzi";
-import { HUB_URL, SITO_URL, VIA } from "@/lib/hub";
+import { HUB_URL, VIA } from "@/lib/hub";
 
 export const metadata: Metadata = {
   title: "Directory dei tool AI — prezzi reali e limiti dichiarati | ELEVIACOM Hub",
@@ -57,67 +56,31 @@ export default function ToolPage() {
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <section className="hub-apertura">
-        <div className="hub-larghezza">
-          <Briciole voci={[{ label: "Tool" }]} />
-          <div className="hub-doppia" style={{ paddingBlock: "44px 44px" }}>
-            <div>
-              <h1 className="hub-titolo" style={{ fontSize: "clamp(2.1rem, 4.6vw, 3.4rem)" }}>
-                Gli strumenti che contano, con i loro limiti scritti.
-              </h1>
-              <p className="hub-sommario">
-                Una directory ragionata invece di un elenco di link. Per ogni strumento: cosa fa, quanto
-                costa davvero, in quali casi conviene e dove smette di funzionare.
-              </p>
-            </div>
-            <div>
-              <span className="hub-mono hub-mono-nero">Stato</span>
-              <ul className="hub-indice" style={{ marginTop: 12 }}>
-                <li>
-                  <span>Tool</span>
-                  <span className="hub-mono">{TOOLS.length}</span>
-                </li>
-                <li>
-                  <span>Categorie</span>
-                  <span className="hub-mono">{categorie.length}</span>
-                </li>
-                <li>
-                  <span>Con piano gratuito</span>
-                  <span className="hub-mono">{gratuiti}</span>
-                </li>
-                <li>
-                  <span>Marchi ufficiali</span>
-                  <span className="hub-mono">{Object.keys(MARCHI).length}</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
+      <Apertura
+        briciole={[{ label: "Tool" }]}
+        titolo="Gli strumenti che contano, con i loro limiti scritti."
+        testo="Una directory ragionata invece di un elenco di link. Per ogni strumento: cosa fa, quanto costa davvero, in quali casi conviene e dove smette di funzionare."
+        dati={[
+          { valore: TOOLS.length, etichetta: "tool schedati" },
+          { valore: categorie.length, etichetta: "categorie" },
+          { valore: gratuiti, etichetta: "con piano gratuito" },
+        ]}
+      />
 
-      <section className="hub-larghezza" style={{ paddingBlock: "10px 56px" }}>
+      <section className="mx-auto w-full max-w-6xl px-4 py-12 md:px-6 md:py-16">
         <ElencoTool tools={TOOLS} categorie={categorie} alfabetico />
-        <p className="hub-mono" style={{ marginTop: 22, textTransform: "none", letterSpacing: 0, maxWidth: "64ch" }}>
-          Le schede sono redatte a mano. Prezzi e funzioni cambiano spesso: verifica sempre sul sito
-          ufficiale prima di sottoscrivere.
+        <p className="mt-8 max-w-3xl text-xs leading-relaxed text-muted">
+          Le schede sono redatte da ELEVIACOM e non hanno rapporti commerciali con i fornitori citati. Prezzi e funzioni
+          cambiano spesso: verifica sempre sul sito ufficiale prima di sottoscrivere.
         </p>
       </section>
 
-      <section className="hub-larghezza" style={{ paddingBottom: 24 }}>
-        <div className="hub-doppia">
-          <Iscrizione compatta />
-          <div className="hub-riquadro hub-riquadro--carta">
-            <span className="hub-mono hub-mono-accento">Quale scegliere</span>
-            <p style={{ marginTop: 12, fontSize: 16, lineHeight: 1.5 }}>
-              La domanda giusta non è quale strumento è il migliore, ma quale problema stai risolvendo.
-              La prima valutazione è gratuita.
-            </p>
-            <a href={`${SITO_URL}/consulenza`} className="hub-bottone" style={{ marginTop: 18 }}>
-              Parlane con noi
-            </a>
-          </div>
-        </div>
-      </section>
+      <Coda
+        consulenza={{
+          titolo: "La domanda giusta non è quale strumento è il migliore.",
+          testo: "È quale problema stai risolvendo. Se vuoi ragionarci insieme, la prima valutazione è gratuita.",
+        }}
+      />
     </main>
   );
 }

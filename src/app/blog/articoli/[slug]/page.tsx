@@ -1,10 +1,13 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { Card, CardContent } from "@/components/ui/card";
 import { getAllPostsMeta, getPost, isoDay } from "@/lib/blog";
 import { CATEGORIE_ARTICOLI, etichetta } from "@/lib/taxonomy";
 import { Avanzamento } from "@/components/hub/avanzamento";
-import { Briciole, Iscrizione } from "@/components/hub/pezzi";
+import { Briciole, Coda } from "@/components/hub/pezzi";
+import { Etichetta, SchedaArticolo } from "@/components/hub/schede";
 import { HUB_URL, SITO_URL, VIA, dataEstesa } from "@/lib/hub";
 
 export const revalidate = 300;
@@ -22,6 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await getPost(slug);
   if (!post) return { title: "Articolo non trovato — ELEVIACOM Hub" };
   const url = post.canonical ?? `${HUB_URL}${VIA.articolo(post.slug)}`;
+  const img = post.cover ? `${HUB_URL}${post.cover}` : undefined;
   return {
     title: post.metaTitle ?? `${post.title} — ELEVIACOM Hub`,
     description: post.description,
@@ -39,8 +43,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       publishedTime: post.publishedAt,
       modifiedTime: post.updatedAt,
       tags: post.tags,
+      images: img ? [{ url: img, width: 1600, height: 900, alt: post.coverAlt ?? post.title }] : undefined,
     },
-    twitter: { card: "summary_large_image", title: post.title, description: post.description },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.description,
+      images: img ? [img] : undefined,
+    },
   };
 }
 
@@ -72,6 +82,7 @@ export default async function Articolo({ params }: Props) {
       author: { "@type": "Organization", name: post.author, url: SITO_URL },
       publisher: { "@type": "Organization", name: "ELEVIACOM", url: SITO_URL },
       mainEntityOfPage: { "@type": "WebPage", "@id": url },
+      image: post.cover ? [`${HUB_URL}${post.cover}`] : undefined,
       keywords: (post.keywords.length ? post.keywords : post.tags).join(", "),
       about: post.entities.map((e) => ({ "@type": "Thing", name: e })),
       citation: post.sources.map((s) => ({ "@type": "CreativeWork", name: s.title, url: s.url })),
@@ -106,7 +117,7 @@ export default async function Articolo({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@graph": graph }) }}
       />
 
-      <div className="hub-larghezza">
+      <div className="mx-auto w-full max-w-6xl px-4 pt-8 md:px-6">
         <Briciole
           voci={[
             { label: "Articoli", href: VIA.articoli },
@@ -114,156 +125,158 @@ export default async function Articolo({ params }: Props) {
             { label: post.title.length > 38 ? `${post.title.slice(0, 38)}…` : post.title },
           ]}
         />
+      </div>
 
-        <div className="hub-doppia" style={{ paddingBlock: "44px 72px" }}>
-          <article>
-            <header>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 18px", marginBottom: 18 }}>
-                <span className="hub-mono hub-mono-accento">{etichetta(CATEGORIE_ARTICOLI, post.category)}</span>
-                <span className="hub-mono">{dataEstesa(post.publishedAt)}</span>
-                <span className="hub-mono">{post.readingMinutes} min di lettura</span>
-              </div>
+      <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 md:px-6 md:py-14 lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-12">
+        <article className="min-w-0">
+          <header>
+            <div className="mb-5 flex flex-wrap items-center gap-2">
+              <Etichetta tono="primario">{etichetta(CATEGORIE_ARTICOLI, post.category)}</Etichetta>
+              <span className="text-sm text-muted">
+                {dataEstesa(post.publishedAt)} · {post.readingMinutes} min di lettura
+              </span>
+            </div>
 
-              <h1 className="hub-titolo" style={{ fontSize: "clamp(2.2rem, 5vw, 3.7rem)" }}>
-                {post.title}
-              </h1>
-              <p className="hub-sommario">{post.description}</p>
-            </header>
+            <h1 className="text-3xl font-bold leading-[1.14] tracking-tight text-foreground md:text-[2.75rem]">
+              {post.title}
+            </h1>
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
+              {post.description}
+            </p>
+          </header>
 
-            {post.keyTakeaways.length > 0 && (
-              <section
-                style={{
-                  marginTop: 34,
-                  paddingBlock: 20,
-                  borderTop: "1px solid var(--filetto-forte)",
-                  borderBottom: "1px solid var(--filetto-forte)",
-                }}
-              >
-                <span className="hub-mono hub-mono-accento">In sintesi</span>
-                <ul className="hub-lista-filetti hub-lista-filetti--chiusa" style={{ marginTop: 10, borderTop: 0 }}>
+          {post.cover && (
+            <div className="relative mt-8 aspect-[16/9] w-full overflow-hidden rounded-lg border border-white/5">
+              <Image
+                src={post.cover}
+                alt={post.coverAlt ?? post.title}
+                fill
+                priority
+                sizes="(max-width: 1024px) 100vw, 760px"
+                className="object-cover"
+              />
+            </div>
+          )}
+
+          {post.keyTakeaways.length > 0 && (
+            <Card className="mt-8">
+              <CardContent className="p-5 pt-5 md:p-6 md:pt-6">
+                <h2 className="text-sm font-semibold text-primary">In sintesi</h2>
+                <ul className="mt-3 space-y-2.5">
                   {post.keyTakeaways.map((t, i) => (
-                    <li key={i}>
+                    <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-muted-foreground">
+                      <span aria-hidden="true" className="mt-2.5 h-1 w-1 shrink-0 rounded-full bg-primary" />
                       <span>{t}</span>
                     </li>
                   ))}
                 </ul>
-              </section>
-            )}
+              </CardContent>
+            </Card>
+          )}
 
-            <div className="hub-articolo" style={{ marginTop: 40 }} dangerouslySetInnerHTML={{ __html: post.html }} />
+          <div className="blog-prose mt-10" dangerouslySetInnerHTML={{ __html: post.html }} />
 
-            {post.faq.length > 0 && (
-              <section style={{ marginTop: 56 }}>
-                <h2 className="hub-sezione-titolo" style={{ marginBottom: 8 }}>
-                  Domande frequenti
-                </h2>
+          {post.faq.length > 0 && (
+            <section className="mt-14">
+              <h2 className="mb-4 text-2xl font-semibold tracking-tight text-foreground">Domande frequenti</h2>
+              <div className="divide-y divide-border rounded-lg border border-white/5 bg-card">
                 {post.faq.map((f, i) => (
-                  <details key={i} className="hub-dettagli" open={i === 0}>
-                    <summary>{f.question}</summary>
-                    <p>{f.answer}</p>
+                  <details key={i} className="group p-5" open={i === 0}>
+                    <summary className="flex cursor-pointer list-none items-start justify-between gap-4 text-base font-medium text-foreground">
+                      <span>{f.question}</span>
+                      <span
+                        aria-hidden="true"
+                        className="mt-0.5 shrink-0 text-primary transition-transform group-open:rotate-45"
+                      >
+                        +
+                      </span>
+                    </summary>
+                    <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">{f.answer}</p>
                   </details>
                 ))}
-              </section>
-            )}
-
-            {post.sources.length > 0 && (
-              <section style={{ marginTop: 48 }}>
-                <h2 className="hub-mono hub-mono-nero" style={{ marginBottom: 4 }}>
-                  Fonti
-                </h2>
-                <ul className="hub-lista-filetti">
-                  {post.sources.map((s, i) => (
-                    <li key={i}>
-                      <a
-                        href={s.url}
-                        target="_blank"
-                        rel="noopener noreferrer nofollow"
-                        style={{ borderBottom: "1px solid var(--filetto)" }}
-                      >
-                        {s.title}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
-            <section style={{ marginTop: 52, paddingTop: 26, borderTop: "1px solid var(--filetto-forte)" }}>
-              <span className="hub-mono hub-mono-accento">ELEVIACOM</span>
-              <p style={{ marginTop: 10, fontSize: 18, lineHeight: 1.5, maxWidth: "48ch" }}>
-                Progettiamo chatbot, automazioni e agenti AI su misura per PMI italiane. La prima
-                valutazione è gratuita e finisce con un documento, non con un preventivo.
-              </p>
-              <a href={`${SITO_URL}/consulenza`} className="hub-bottone" style={{ marginTop: 20 }}>
-                Richiedi una consulenza
-              </a>
+              </div>
             </section>
-          </article>
+          )}
 
-          {/* ── Indice e argomenti ─────────────────────────────── */}
-          <aside>
-            <div style={{ position: "sticky", top: 74 }}>
-              {post.toc.length > 2 && (
-                <nav aria-label="Indice dell'articolo">
-                  <span className="hub-mono hub-mono-nero">In questo articolo</span>
-                  <div className="hub-toc" style={{ marginTop: 12 }}>
-                    {post.toc.map((v) => (
-                      <a key={v.id} href={`#${v.id}`} data-livello={v.level}>
-                        {v.text}
-                      </a>
-                    ))}
-                  </div>
-                </nav>
-              )}
+          {post.sources.length > 0 && (
+            <section className="mt-12">
+              <h2 className="mb-3 text-sm font-semibold text-foreground">Fonti</h2>
+              <ul className="space-y-2">
+                {post.sources.map((s, i) => (
+                  <li key={i} className="text-sm">
+                    <a
+                      href={s.url}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      className="text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground"
+                    >
+                      {s.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </article>
 
-              {post.tags.length > 0 && (
-                <div style={{ marginTop: 28 }}>
-                  <span className="hub-mono hub-mono-nero">Argomenti</span>
-                  <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: "6px 14px" }}>
-                    {post.tags.map((t) => (
-                      <span key={t} className="hub-mono">
-                        {t}
-                      </span>
-                    ))}
-                  </div>
+        <aside>
+          <div className="sticky top-24 space-y-6">
+            {post.toc.length > 2 && (
+              <nav aria-label="Indice dell'articolo">
+                <h2 className="mb-3 text-sm font-semibold text-foreground">In questo articolo</h2>
+                <div className="space-y-1 border-l border-border">
+                  {post.toc.map((v) => (
+                    <a
+                      key={v.id}
+                      href={`#${v.id}`}
+                      className={`-ml-px block border-l border-transparent py-1.5 text-sm leading-snug text-muted-foreground transition-colors hover:border-primary hover:text-foreground ${
+                        v.level === 3 ? "pl-7 text-[13px]" : "pl-4"
+                      }`}
+                    >
+                      {v.text}
+                    </a>
+                  ))}
                 </div>
-              )}
-            </div>
-          </aside>
-        </div>
+              </nav>
+            )}
 
-        {correlati.length > 0 && (
-          <section style={{ paddingBottom: 56 }}>
-            <h2
-              className="hub-sezione-titolo"
-              style={{ paddingBottom: 14, borderBottom: "1px solid var(--filetto-forte)" }}
-            >
-              Continua a leggere
-            </h2>
-            <div className="hub-elenco" style={{ borderTop: 0 }}>
-              {correlati.map((r, i) => (
-                <Link key={r.slug} href={VIA.articolo(r.slug)} className="hub-riga">
-                  <span className="hub-riga-num">{String(i + 1).padStart(2, "0")}</span>
-                  <div>
-                    <h3 className="hub-riga-titolo" style={{ fontSize: "1.15rem" }}>
-                      {r.title}
-                    </h3>
-                    <p className="hub-riga-testo">{r.description}</p>
-                  </div>
-                  <div className="hub-riga-meta">
-                    <span className="hub-mono hub-mono-accento">{etichetta(CATEGORIE_ARTICOLI, r.category)}</span>
-                    <span className="hub-mono">{r.readingMinutes} min</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
-        <section style={{ paddingBottom: 24 }}>
-          <Iscrizione compatta />
-        </section>
+            {post.tags.length > 0 && (
+              <div>
+                <h2 className="mb-3 text-sm font-semibold text-foreground">Argomenti</h2>
+                <div className="flex flex-wrap gap-2">
+                  {post.tags.map((t) => (
+                    <Etichetta key={t}>{t}</Etichetta>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </aside>
       </div>
+
+      {correlati.length > 0 && (
+        <section className="mx-auto w-full max-w-6xl border-t border-border px-4 py-12 md:px-6 md:py-16">
+          <div className="mb-6 flex items-end justify-between gap-4">
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">Continua a leggere</h2>
+            <Link href={VIA.articoli} className="shrink-0 text-sm font-medium text-primary hover:text-[#6aa1f8]">
+              Tutti gli articoli &rarr;
+            </Link>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-5">
+            {correlati.map((r) => (
+              <SchedaArticolo key={r.slug} post={r} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <Coda
+        consulenza={{
+          titolo: "Serve una mano ad applicarlo davvero?",
+          testo:
+            "Progettiamo chatbot, automazioni e agenti AI su misura per PMI italiane. La prima valutazione è gratuita e finisce con un documento, non con un preventivo.",
+        }}
+      />
     </main>
   );
 }

@@ -1,27 +1,22 @@
 import type { Metadata } from "next";
-import "./hub.css";
-import { Testata } from "@/components/hub/testata";
-import { Piede } from "@/components/hub/pezzi";
-import { HUB_URL, dataEstesa } from "@/lib/hub";
+import { HubHeader } from "@/components/hub/header";
+import { FooterSection } from "@/components/ui/flickering-footer";
+import { HUB_URL } from "@/lib/hub";
 
 export const metadata: Metadata = {
   metadataBase: new URL(HUB_URL),
 };
 
+/**
+ * L'hub usa il sistema visivo del sito: fondo nero, Inter, le stesse
+ * Card e gli stessi bottoni. Nessun tema separato.
+ */
 export default function HubLayout({ children }: { children: React.ReactNode }) {
-  const oggi = dataEstesa(new Date().toISOString());
-
   return (
-    <>
-      {/* I caratteri stanno in /public/font: nessuna chiamata a terzi.
-          Il sito principale resta su Inter, l'hub ha la sua voce. */}
-      <link rel="preload" as="font" type="font/woff2" href="/font/newsreader.woff2" crossOrigin="" />
-      <link rel="preload" as="font" type="font/woff2" href="/font/jetbrains-mono-500.woff2" crossOrigin="" />
-      <div className="hub">
-        <Testata data={oggi} />
-        {children}
-        <Piede />
-      </div>
-    </>
+    <div className="min-h-screen bg-background">
+      <HubHeader />
+      {children}
+      <FooterSection />
+    </div>
   );
 }

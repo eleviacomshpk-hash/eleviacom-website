@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-/** Filetto di avanzamento sotto la testata. Due pixel, colore d'accento. */
+/** Filetto di avanzamento sotto la testata, nel blu del sito. */
 export function Avanzamento() {
   const [pct, setPct] = useState(0);
 
@@ -30,8 +30,8 @@ export function Avanzamento() {
   }, []);
 
   return (
-    <div className="hub-avanzamento" aria-hidden="true">
-      <span style={{ width: `${pct}%` }} />
+    <div className="pointer-events-none fixed inset-x-0 top-16 z-40 h-0.5" aria-hidden="true">
+      <div className="h-full bg-primary transition-[width] duration-150 ease-out" style={{ width: `${pct}%` }} />
     </div>
   );
 }

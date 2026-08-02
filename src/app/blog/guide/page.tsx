@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { GUIDE, categorieGuideAttive } from "@/lib/guides";
+import { Apertura, Coda } from "@/components/hub/pezzi";
 import { ElencoGuide } from "@/components/hub/elenchi";
-import { Briciole, Iscrizione } from "@/components/hub/pezzi";
-import { HUB_URL, SITO_URL, VIA } from "@/lib/hub";
+import { HUB_URL, VIA } from "@/lib/hub";
 
 export const metadata: Metadata = {
   title: "Guide AI operative, per mestiere — ELEVIACOM Hub",
@@ -56,59 +56,28 @@ export default function GuidePage() {
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <section className="hub-apertura">
-        <div className="hub-larghezza">
-          <Briciole voci={[{ label: "Guide" }]} />
-          <div className="hub-doppia" style={{ paddingBlock: "44px 44px" }}>
-            <div>
-              <h1 className="hub-titolo" style={{ fontSize: "clamp(2.1rem, 4.6vw, 3.4rem)" }}>
-                Automatizza il lavoro, un passo alla volta.
-              </h1>
-              <p className="hub-sommario">
-                I casi d&apos;uso che funzionano davvero in un&apos;impresa italiana, organizzati per
-                mestiere. Ogni guida dice cosa serve prima di iniziare e a cosa si arriva.
-              </p>
-            </div>
-            <div>
-              <span className="hub-mono hub-mono-nero">Stato</span>
-              <ul className="hub-indice" style={{ marginTop: 12 }}>
-                <li>
-                  <span>Guide</span>
-                  <span className="hub-mono">{String(GUIDE.length).padStart(2, "0")}</span>
-                </li>
-                <li>
-                  <span>Ambiti</span>
-                  <span className="hub-mono">{String(categorie.length).padStart(2, "0")}</span>
-                </li>
-                <li>
-                  <span>Tempo medio</span>
-                  <span className="hub-mono">{medio} min</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
+      <Apertura
+        briciole={[{ label: "Guide" }]}
+        titolo="Automatizza il lavoro, un passo alla volta."
+        testo="I casi d'uso che funzionano davvero in un'impresa italiana, organizzati per mestiere. Ogni guida dice cosa serve prima di iniziare e a cosa si arriva."
+        dati={[
+          { valore: GUIDE.length, etichetta: "guide" },
+          { valore: categorie.length, etichetta: "ambiti" },
+          { valore: `${medio} min`, etichetta: "tempo medio" },
+        ]}
+      />
 
-      <section className="hub-larghezza" style={{ paddingBlock: "10px 56px" }}>
+      <section className="mx-auto w-full max-w-6xl px-4 py-12 md:px-6 md:py-16">
         <ElencoGuide guide={GUIDE} categorie={categorie} />
       </section>
 
-      <section className="hub-larghezza" style={{ paddingBottom: 24 }}>
-        <div className="hub-doppia">
-          <Iscrizione compatta />
-          <div className="hub-riquadro hub-riquadro--carta">
-            <span className="hub-mono hub-mono-accento">Su misura</span>
-            <p style={{ marginTop: 12, fontSize: 16, lineHeight: 1.5 }}>
-              Se preferisci che il flusso venga costruito, collaudato e mantenuto da qualcuno, è quello
-              che facciamo.
-            </p>
-            <a href={`${SITO_URL}/consulenza`} className="hub-bottone" style={{ marginTop: 18 }}>
-              Consulenza
-            </a>
-          </div>
-        </div>
-      </section>
+      <Coda
+        consulenza={{
+          titolo: "Preferisci che il flusso lo costruisca qualcun altro?",
+          testo:
+            "Progettiamo, colladiamo e manteniamo automazioni e agenti AI per PMI italiane. La prima valutazione è gratuita.",
+        }}
+      />
     </main>
   );
 }
