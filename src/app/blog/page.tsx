@@ -53,36 +53,45 @@ export default async function BlogIndexPage() {
         {posts.length === 0 ? (
           <p className="text-[var(--lettura-tenue)]">Nessun articolo pubblicato.</p>
         ) : (
-          <div className="space-y-10">
+          <div className="grid gap-7 sm:grid-cols-2">
             {posts.map((post) => (
-              <article key={post.slug} className="group">
+              <article
+                key={post.slug}
+                className="group overflow-hidden rounded-xl border border-[var(--lettura-bordo)] lettura-superficie transition-all duration-300 hover:border-[#3d4750] hover:shadow-[0_8px_30px_rgba(0,0,0,0.35)]"
+              >
                 <Link href={`/blog/${post.slug}`} className="block">
                   {post.cover && (
-                    <div className="relative mb-4 aspect-[16/9] w-full overflow-hidden rounded-lg border border-[var(--lettura-bordo)]">
-                      <Image src={post.cover} alt={post.coverAlt ?? post.title} fill
+                    <div className="relative aspect-[16/9] w-full overflow-hidden">
+                      <Image
+                        src={post.cover}
+                        alt={post.coverAlt ?? post.title}
+                        fill
                         sizes="(max-width: 768px) 100vw, 768px"
-                        className="object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
+                        className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                      />
                     </div>
                   )}
-                  <div className="flex items-center gap-3 text-xs text-[var(--lettura-tenue)] mb-2">
-                    <time dateTime={isoDay(post.publishedAt)}>{formatDate(post.publishedAt)}</time>
-                    <span aria-hidden="true">&middot;</span>
-                    <span>{post.readingMinutes} min di lettura</span>
+                  <div className="p-6 md:p-7">
+                    <div className="mb-2.5 flex items-center gap-3 text-xs text-[var(--lettura-tenue)]">
+                      <time dateTime={isoDay(post.publishedAt)}>{formatDate(post.publishedAt)}</time>
+                      <span aria-hidden="true">&middot;</span>
+                      <span>{post.readingMinutes} min di lettura</span>
+                    </div>
+                    <h2 className="text-xl font-semibold leading-snug text-[var(--lettura-titolo)] md:text-2xl">
+                      {post.title}
+                    </h2>
+                    <p className="mt-2.5 leading-relaxed text-[var(--lettura-testo)]">{post.description}</p>
+                    {post.tags.length > 0 && (
+                      <div className="mt-4 flex flex-wrap items-center gap-x-2.5 text-[11px] uppercase tracking-[0.14em] text-[var(--lettura-tenue)]">
+                        {post.tags.slice(0, 3).map((tag, i) => (
+                          <span key={tag} className="flex items-center gap-2.5">
+                            {i > 0 && <span aria-hidden="true" className="opacity-40">/</span>}
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <h2 className="text-xl md:text-2xl font-semibold text-[var(--lettura-titolo)] group-hover:text-[var(--lettura-titolo)] transition-colors">
-                    {post.title}
-                  </h2>
-                  <p className="mt-2 text-neutral-400 leading-relaxed">{post.description}</p>
-                  {post.tags.length > 0 && (
-                    <div className="mt-3 flex flex-wrap items-center gap-x-2.5 text-[11px] uppercase tracking-[0.14em] text-[var(--lettura-tenue)]">
-                      {post.tags.slice(0, 3).map((tag, i) => (
-                        <span key={tag} className="flex items-center gap-2.5">
-                          {i > 0 && <span aria-hidden="true" className="text-neutral-800">/</span>}
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </Link>
               </article>
             ))}

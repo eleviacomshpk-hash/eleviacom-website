@@ -221,9 +221,10 @@ export default async function BlogPostPage({ params }: Props) {
             </h2>
             <div className="grid gap-6 sm:grid-cols-3">
               {related.map((r) => (
-                <Link key={r.slug} href={`/blog/${r.slug}`} className="group block">
+                <Link key={r.slug} href={`/blog/${r.slug}`}
+                  className="group block overflow-hidden rounded-xl border border-[var(--lettura-bordo)] lettura-superficie transition-all duration-300 hover:border-[#3d4750]">
                   {r.cover && (
-                    <div className="relative mb-3 aspect-[16/10] overflow-hidden rounded-lg border border-[var(--lettura-bordo)]">
+                    <div className="relative aspect-[16/10] overflow-hidden">
                       <Image src={r.cover} alt={r.coverAlt ?? r.title} fill sizes="33vw"
                         className="object-cover transition-transform duration-500 group-hover:scale-105" />
                     </div>
