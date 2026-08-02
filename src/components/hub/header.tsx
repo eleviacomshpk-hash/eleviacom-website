@@ -5,36 +5,45 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { WordmarkIcon } from "@/components/ui/header-2";
 import { MenuToggleIcon } from "@/components/ui/menu-toggle-icon";
 import { useScroll } from "@/components/ui/use-scroll";
-import { VIA, interno } from "@/lib/hub";
+import { MarchioEleviacom } from "@/components/hub/marchio-eleviacom";
+import { SITO_URL, VIA } from "@/lib/hub";
 
 const VOCI = [
-  { href: VIA.articoli, label: "Articoli" },
-  { href: VIA.guide, label: "Guide" },
-  { href: VIA.tool, label: "Tool" },
+  { href: VIA.articoli, sezione: "articoli", label: "Articoli" },
+  { href: VIA.guide, sezione: "guide", label: "Guide" },
+  { href: VIA.tool, sezione: "tool", label: "Tool" },
 ];
+
+/**
+ * La sezione corrente si ricava dal primo segmento del percorso, tolto
+ * l'eventuale /blog. Confrontare con startsWith non funziona: sul
+ * sottodominio il browser vede /tool mentre le route interne stanno
+ * sotto /blog, e ogni voce risultava attiva.
+ */
+function sezioneCorrente(pathname: string): string {
+  const segmenti = pathname.split("/").filter(Boolean);
+  if (segmenti[0] === "blog") segmenti.shift();
+  return segmenti[0] ?? "";
+}
 
 export function HubHeader() {
   const pathname = usePathname();
   const [aperto, setAperto] = useState(false);
   const scrolled = useScroll(10);
-
-  const attiva = (href: string) => pathname.startsWith(interno(href));
+  const corrente = sezioneCorrente(pathname);
 
   return (
     <header
       className={cn(
         "sticky top-0 z-50 w-full border-b transition-colors duration-300",
-        scrolled || aperto
-          ? "border-border bg-background/80 backdrop-blur-xl"
-          : "border-transparent bg-background"
+        scrolled || aperto ? "border-border bg-background/80 backdrop-blur-xl" : "border-transparent bg-background"
       )}
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-8 px-4 md:px-6">
         <Link href={VIA.home} aria-label="ELEVIACOM Hub" className="shrink-0">
-          <WordmarkIcon className="h-4 text-foreground" />
+          <MarchioEleviacom sezione="Hub" />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
@@ -42,11 +51,10 @@ export function HubHeader() {
             <Link
               key={v.href}
               href={v.href}
+              aria-current={corrente === v.sezione ? "page" : undefined}
               className={cn(
                 "rounded-md px-3 py-2 text-sm transition-colors",
-                attiva(v.href)
-                  ? "bg-accent text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+                corrente === v.sezione ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"
               )}
             >
               {v.label}
@@ -56,7 +64,7 @@ export function HubHeader() {
 
         <div className="ml-auto flex items-center gap-2">
           <Button variant="ghost" className="hidden text-muted-foreground hover:text-foreground sm:inline-flex" asChild>
-            <a href="https://www.eleviacom.space">Sito</a>
+            <a href={SITO_URL}>Sito</a>
           </Button>
           <Button asChild className="hidden sm:inline-flex">
             <a href="https://wa.me/393473596624" target="_blank" rel="noopener noreferrer">
@@ -84,7 +92,12 @@ export function HubHeader() {
                 key={v.href}
                 href={v.href}
                 onClick={() => setAperto(false)}
-                className="rounded-md px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                className={cn(
+                  "rounded-md px-3 py-2.5 text-sm transition-colors",
+                  corrente === v.sezione
+                    ? "bg-accent text-foreground"
+                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                )}
               >
                 {v.label}
               </Link>

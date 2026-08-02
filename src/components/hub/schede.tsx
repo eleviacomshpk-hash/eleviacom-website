@@ -127,9 +127,16 @@ export function SchedaGuida({ guida }: { guida: Guida }) {
             alt=""
             fill
             sizes="(max-width: 768px) 100vw, 400px"
-            className="object-cover object-top opacity-45 transition-transform duration-700 group-hover/card:scale-[1.04]"
+            className="object-cover object-top opacity-75 transition-transform duration-700 group-hover/card:scale-[1.04]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/70 to-card/20" />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to top, #0a0a0a 0%, rgba(10,10,10,0.9) 24%, rgba(10,10,10,0.4) 50%, rgba(10,10,10,0.05) 72%)",
+            }}
+          />
           <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 p-4">
             {guida.tools.slice(0, 4).map((s) => {
               const t = getTool(s);
@@ -179,11 +186,18 @@ export function SchedaTool({ tool }: { tool: Tool }) {
             alt={`Schermata di ${tool.name}`}
             fill
             sizes="(max-width: 768px) 100vw, 400px"
-            className="object-cover object-top opacity-90 transition-transform duration-700 group-hover/card:scale-[1.04]"
+            className="object-cover object-top transition-transform duration-700 group-hover/card:scale-[1.04]"
           />
-          {/* Le schermate reali hanno luminosita diverse: la velatura le riporta
-              tutte sullo stesso registro scuro della pagina. */}
-          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/55 to-black/25" />
+          {/* La velatura serve solo a far posare il nome in basso: sopra il 45%
+              la schermata resta pulita e leggibile. */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to top, #0a0a0a 0%, rgba(10,10,10,0.92) 20%, rgba(10,10,10,0.35) 44%, rgba(10,10,10,0) 62%)",
+            }}
+          />
           <div className="absolute inset-x-0 bottom-0 flex items-center gap-2.5 p-4">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-white/10 bg-black/60 backdrop-blur">
               {MARCHI[tool.slug] ? (
@@ -192,7 +206,9 @@ export function SchedaTool({ tool }: { tool: Tool }) {
                 <span className="text-[11px] font-semibold text-foreground">{tool.name.slice(0, 2)}</span>
               )}
             </span>
-            <span className="truncate text-base font-semibold text-foreground">{tool.name}</span>
+            <span className="truncate text-base font-semibold text-foreground [text-shadow:0_1px_8px_rgba(0,0,0,0.85)]">
+              {tool.name}
+            </span>
           </div>
         </div>
         <CardContent className="flex flex-1 flex-col p-5 pt-4">

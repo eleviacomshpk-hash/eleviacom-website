@@ -46,14 +46,22 @@ export function Apertura({
 }) {
   return (
     <section className="relative overflow-hidden border-b border-border">
-      {/* stessa firma visiva della home: alone viola in alto */}
+      {/* Alone dell'apertura: una sola ellisse sfumata su tutti i lati.
+          Prima era un blocco ritagliato in alto e si vedeva il bordo netto. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 -top-40 h-72 opacity-40"
-        style={{ background: "radial-gradient(60% 100% at 50% 100%, #8350e8, transparent 70%)" }}
-      />
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+      >
+        <div
+          className="absolute left-1/2 top-0 h-[420px] w-[1100px] -translate-x-1/2 -translate-y-1/2"
+          style={{
+            background:
+              "radial-gradient(closest-side, rgba(131,80,232,0.30), rgba(131,80,232,0.10) 55%, rgba(131,80,232,0) 78%)",
+          }}
+        />
+      </div>
       <div className="relative mx-auto w-full max-w-6xl px-4 py-12 md:px-6 md:py-20">
-        <Briciole voci={briciole} />
+        {briciole.length > 0 && <Briciole voci={briciole} />}
         <h1 className="mt-6 max-w-3xl text-3xl font-bold leading-[1.12] tracking-tight text-foreground md:text-5xl">
           {titolo}
         </h1>
