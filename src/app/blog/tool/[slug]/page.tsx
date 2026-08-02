@@ -1,21 +1,17 @@
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { SITE_URL } from "@/lib/blog";
 import {
   TOOLS,
   ETICHETTE_PREZZO,
   categoriaPrincipale,
   etichettaCategoriaTool,
   getTool,
-  logoTool,
   toolSimili,
 } from "@/lib/tools";
-import { guidePerTool } from "@/lib/guides";
-import { BlogHeader } from "@/components/blog/blog-header";
-import { Briciole } from "@/components/blog/briciole";
-import { GuidaCard, Pillola, ToolCard, TitoloSezione } from "@/components/blog/cards";
+import { guidePerTool, etichettaCategoriaGuida, ETICHETTE_DIFFICOLTA } from "@/lib/guides";
+import { Briciole, Marchio } from "@/components/hub/pezzi";
+import { HUB_URL, SITO_URL, VIA } from "@/lib/hub";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -26,39 +22,32 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const t = getTool(slug);
-  if (!t) return { title: "Tool non trovato — ELEVIACOM" };
-  const url = `${SITE_URL}/blog/tool/${t.slug}`;
+  if (!t) return { title: "Tool non trovato — ELEVIACOM Hub" };
   return {
-    title: `${t.name} — cosa fa, quanto costa e quando conviene | ELEVIACOM`,
-    description: t.tagline + " " + t.description.slice(0, 110),
-    alternates: { canonical: url },
+    title: `${t.name} — cosa fa, quanto costa e quando conviene | ELEVIACOM Hub`,
+    description: `${t.tagline}. ${t.description.slice(0, 120)}`,
+    alternates: { canonical: `${HUB_URL}${VIA.scheda(t.slug)}` },
     openGraph: {
       type: "article",
-      url,
-      siteName: "ELEVIACOM",
+      url: `${HUB_URL}${VIA.scheda(t.slug)}`,
+      siteName: "ELEVIACOM Hub",
       locale: "it_IT",
-      title: `${t.name} — scheda tool`,
+      title: `${t.name} — scheda`,
       description: t.tagline,
-      images: [{ url: `${SITE_URL}${logoTool(t.slug)}`, width: 320, height: 320, alt: `Logo ${t.name}` }],
     },
-    twitter: { card: "summary", title: `${t.name} — scheda tool`, description: t.tagline },
   };
 }
 
-function Elenco({ titolo, voci, segno }: { titolo: string; voci: string[]; segno: "linea" | "piu" | "meno" }) {
-  if (voci.length === 0) return null;
+function Blocco({ titolo, voci }: { titolo: string; voci: string[] }) {
+  if (!voci.length) return null;
   return (
-    <section className="mt-12">
-      <h2 className="mb-5 text-lg font-semibold text-[var(--lettura-titolo)]">{titolo}</h2>
-      <ul className="space-y-3">
+    <section style={{ marginTop: 44 }}>
+      <h2 className="hub-mono hub-mono-nero" style={{ marginBottom: 4 }}>
+        {titolo}
+      </h2>
+      <ul className="hub-lista-filetti">
         {voci.map((v, i) => (
-          <li key={i} className="flex gap-3.5 text-[15px] leading-relaxed text-neutral-300">
-            <span
-              aria-hidden="true"
-              className={`mt-[0.62em] h-px w-3.5 shrink-0 ${
-                segno === "piu" ? "bg-[#5f9e7d]" : segno === "meno" ? "bg-[#9e6b5f]" : "bg-neutral-700"
-              }`}
-            />
+          <li key={i}>
             <span>{v}</span>
           </li>
         ))}
@@ -67,7 +56,7 @@ function Elenco({ titolo, voci, segno }: { titolo: string; voci: string[]; segno
   );
 }
 
-export default async function ToolDetailPage({ params }: Props) {
+export default async function SchedaTool({ params }: Props) {
   const { slug } = await params;
   const t = getTool(slug);
   if (!t) notFound();
@@ -75,7 +64,6 @@ export default async function ToolDetailPage({ params }: Props) {
   const simili = toolSimili(t, 4);
   const guide = guidePerTool(t.slug, 3);
   const principale = categoriaPrincipale(t);
-  const url = `${SITE_URL}/blog/tool/${t.slug}`;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -86,180 +74,164 @@ export default async function ToolDetailPage({ params }: Props) {
         description: t.description,
         applicationCategory: "BusinessApplication",
         url: t.url,
-        image: `${SITE_URL}${logoTool(t.slug)}`,
+        featureList: t.features,
         offers: {
           "@type": "Offer",
-          price: t.pricing === "gratis" ? "0" : undefined,
           priceCurrency: "EUR",
+          price: t.pricing === "gratis" ? "0" : undefined,
           description: t.pricingNote ?? ETICHETTE_PREZZO[t.pricing],
         },
-        featureList: t.features,
         inLanguage: "it-IT",
       },
       {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
-          { "@type": "ListItem", position: 2, name: "Blog", item: `${SITE_URL}/blog` },
-          { "@type": "ListItem", position: 3, name: "Tool", item: `${SITE_URL}/blog/tool` },
-          { "@type": "ListItem", position: 4, name: t.name, item: url },
+          { "@type": "ListItem", position: 1, name: "Hub", item: HUB_URL },
+          { "@type": "ListItem", position: 2, name: "Tool", item: `${HUB_URL}${VIA.tool}` },
+          { "@type": "ListItem", position: 3, name: t.name, item: `${HUB_URL}${VIA.scheda(t.slug)}` },
         ],
       },
     ],
   };
 
   return (
-    <main className="lettura min-h-screen text-[var(--lettura-testo)]">
+    <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <BlogHeader />
 
-      <div className="mx-auto max-w-6xl px-6 py-10 md:py-14">
+      <div className="hub-larghezza">
         <Briciole
           voci={[
-            { label: "Blog", href: "/blog" },
-            { label: "Tool", href: "/blog/tool" },
-            { label: etichettaCategoriaTool(principale), href: "/blog/tool" },
+            { label: "Tool", href: VIA.tool },
+            { label: etichettaCategoriaTool(principale), href: VIA.tool },
             { label: t.name },
           ]}
         />
 
-        <div className="mt-8 gap-12 lg:grid lg:grid-cols-[minmax(0,1fr)_18rem]">
-          {/* ── Colonna principale ─────────────────────────────── */}
-          <div className="min-w-0">
-            <header className="flex flex-wrap items-start gap-6">
-              <span
-                className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl ring-1 ring-white/10"
-                style={{ boxShadow: `0 12px 48px -18px ${t.color}` }}
-              >
-                <Image src={logoTool(t.slug)} alt={`Logo ${t.name}`} fill priority sizes="96px" className="object-cover" />
+        <div className="hub-doppia" style={{ paddingBlock: "44px 72px" }}>
+          {/* ── Colonna di lettura ─────────────────────────────── */}
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <span style={{ display: "inline-flex", width: 22, height: 22 }}>
+                <Marchio slug={t.slug} titolo={t.name} />
               </span>
-              <div className="min-w-0 flex-1">
-                <h1 className="text-3xl font-bold tracking-tight text-[var(--lettura-titolo)] md:text-4xl">
-                  {t.name}
-                </h1>
-                <p className="mt-2 text-lg leading-relaxed text-neutral-400">{t.tagline}</p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {t.categories.map((c) => (
-                    <Pillola key={c}>{etichettaCategoriaTool(c)}</Pillola>
-                  ))}
-                  <Pillola tono="acceso">{ETICHETTE_PREZZO[t.pricing]}</Pillola>
-                </div>
-              </div>
-            </header>
+              <span className="hub-mono hub-mono-accento">{etichettaCategoriaTool(principale)}</span>
+            </div>
 
-            <p className="mt-8 text-[17px] leading-relaxed text-neutral-300">{t.description}</p>
+            <h1 className="hub-titolo" style={{ fontSize: "clamp(2.3rem, 5vw, 3.6rem)", marginTop: 14 }}>
+              {t.name}
+            </h1>
+            <p className="hub-sommario" style={{ marginTop: 14 }}>
+              {t.tagline}
+            </p>
 
-            <Elenco titolo="Funzioni principali" voci={t.features} segno="linea" />
-            <Elenco titolo="A cosa serve in azienda" voci={t.useCases} segno="linea" />
+            <div className="hub-prosa" style={{ marginTop: 30 }}>
+              <p>{t.description}</p>
+            </div>
 
-            <section className="mt-12 grid gap-6 sm:grid-cols-2">
-              <div className="rounded-2xl border border-[var(--lettura-bordo)] p-6">
-                <h2 className="mb-4 text-sm font-semibold uppercase tracking-[0.12em] text-[var(--lettura-tenue)]">
-                  Punti di forza
-                </h2>
-                <ul className="space-y-3">
-                  {t.pros.map((p, i) => (
-                    <li key={i} className="flex gap-3 text-sm leading-relaxed text-neutral-300">
-                      <span aria-hidden="true" className="mt-[0.6em] h-px w-3 shrink-0 bg-[#5f9e7d]" />
-                      <span>{p}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="rounded-2xl border border-[var(--lettura-bordo)] p-6">
-                <h2 className="mb-4 text-sm font-semibold uppercase tracking-[0.12em] text-[var(--lettura-tenue)]">
-                  Limiti da conoscere
-                </h2>
-                <ul className="space-y-3">
-                  {t.cons.map((c, i) => (
-                    <li key={i} className="flex gap-3 text-sm leading-relaxed text-neutral-300">
-                      <span aria-hidden="true" className="mt-[0.6em] h-px w-3 shrink-0 bg-[#9e6b5f]" />
-                      <span>{c}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </section>
+            <Blocco titolo="Funzioni principali" voci={t.features} />
+            <Blocco titolo="A cosa serve in azienda" voci={t.useCases} />
+            <Blocco titolo="Punti di forza" voci={t.pros} />
+            <Blocco titolo="Limiti da conoscere" voci={t.cons} />
 
             {guide.length > 0 && (
-              <section className="mt-16 border-t border-[var(--lettura-bordo)] pt-12">
-                <TitoloSezione titolo={`Guide che usano ${t.name}`} href="/blog/guide" hrefLabel="Tutte le guide" />
-                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                  {guide.map((g) => (
-                    <GuidaCard key={g.slug} guida={g} />
+              <section style={{ marginTop: 56 }}>
+                <h2 className="hub-sezione-titolo" style={{ paddingBottom: 14, borderBottom: "1px solid var(--filetto-forte)" }}>
+                  Guide che usano {t.name}
+                </h2>
+                <div className="hub-elenco" style={{ borderTop: 0 }}>
+                  {guide.map((g, i) => (
+                    <Link key={g.slug} href={VIA.guida(g.slug)} className="hub-riga">
+                      <span className="hub-riga-num">{String(i + 1).padStart(2, "0")}</span>
+                      <div>
+                        <h3 className="hub-riga-titolo" style={{ fontSize: "1.15rem" }}>
+                          {g.title}
+                        </h3>
+                        <p className="hub-riga-testo">{g.description}</p>
+                      </div>
+                      <div className="hub-riga-meta">
+                        <span className="hub-mono hub-mono-accento">{etichettaCategoriaGuida(g.category)}</span>
+                        <span className="hub-mono">{ETICHETTE_DIFFICOLTA[g.difficulty]}</span>
+                        <span className="hub-mono">{g.minutes} min</span>
+                      </div>
+                    </Link>
                   ))}
                 </div>
               </section>
             )}
 
             {simili.length > 0 && (
-              <section className="mt-16 border-t border-[var(--lettura-bordo)] pt-12">
-                <TitoloSezione titolo="Tool simili" href="/blog/tool" hrefLabel="Tutta la directory" />
-                <div className="grid gap-4 sm:grid-cols-2">
+              <section style={{ marginTop: 56 }}>
+                <h2 className="hub-sezione-titolo" style={{ paddingBottom: 14, borderBottom: "1px solid var(--filetto-forte)" }}>
+                  Alternative da valutare
+                </h2>
+                <div className="hub-elenco" style={{ borderTop: 0 }}>
                   {simili.map((s) => (
-                    <ToolCard key={s.slug} tool={s} />
+                    <Link key={s.slug} href={VIA.scheda(s.slug)} className="hub-tool-riga">
+                      <Marchio slug={s.slug} titolo={s.name} />
+                      <span>
+                        <span className="hub-tool-nome">{s.name}</span>
+                        <span className="hub-tool-cat">{etichettaCategoriaTool(s.categories[0])}</span>
+                      </span>
+                      <span className="hub-tool-desc">{s.tagline}</span>
+                      <span className="hub-tool-coda hub-mono">{ETICHETTE_PREZZO[s.pricing]}</span>
+                    </Link>
                   ))}
                 </div>
               </section>
             )}
           </div>
 
-          {/* ── Pannello laterale ──────────────────────────────── */}
-          <aside className="mt-12 lg:mt-0">
-            <div className="sticky top-24 space-y-4">
-              <div className="rounded-2xl border border-[var(--lettura-bordo)] lettura-superficie p-6">
+          {/* ── Scheda tecnica ─────────────────────────────────── */}
+          <aside>
+            <div style={{ position: "sticky", top: 74 }}>
+              <div className="hub-riquadro">
+                <span className="hub-mono hub-mono-nero">Scheda</span>
+                <ul className="hub-indice" style={{ marginTop: 12 }}>
+                  <li>
+                    <span className="hub-mono">Categoria</span>
+                    <span>{etichettaCategoriaTool(principale)}</span>
+                  </li>
+                  <li>
+                    <span className="hub-mono">Prezzo</span>
+                    <span>{ETICHETTE_PREZZO[t.pricing]}</span>
+                  </li>
+                </ul>
+                {t.pricingNote && (
+                  <p style={{ marginTop: 12, fontSize: 14.5, lineHeight: 1.45, color: "var(--inchiostro-tenue)" }}>
+                    {t.pricingNote}
+                  </p>
+                )}
                 <a
                   href={t.url}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
-                  className="block w-full rounded-full bg-[#eef2f5] px-5 py-3 text-center text-sm font-medium text-[#15191c] transition-colors hover:bg-white"
+                  className="hub-bottone hub-bottone--pieno"
+                  style={{ marginTop: 18, width: "100%", textAlign: "center" }}
                 >
                   Vai a {t.name}
                 </a>
-
-                <dl className="mt-6 space-y-4 text-sm">
-                  <div>
-                    <dt className="text-[11px] uppercase tracking-[0.12em] text-[var(--lettura-tenue)]">Categoria</dt>
-                    <dd className="mt-1 text-neutral-300">{etichettaCategoriaTool(principale)}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-[11px] uppercase tracking-[0.12em] text-[var(--lettura-tenue)]">Prezzo</dt>
-                    <dd className="mt-1 text-neutral-300">{ETICHETTE_PREZZO[t.pricing]}</dd>
-                    {t.pricingNote && (
-                      <dd className="mt-1 text-[13px] leading-relaxed text-[var(--lettura-tenue)]">{t.pricingNote}</dd>
-                    )}
-                  </div>
-                  <div>
-                    <dt className="text-[11px] uppercase tracking-[0.12em] text-[var(--lettura-tenue)]">Sito</dt>
-                    <dd className="mt-1 break-all">
-                      <a
-                        href={t.url}
-                        target="_blank"
-                        rel="noopener noreferrer nofollow"
-                        className="text-neutral-300 underline underline-offset-4 hover:text-white"
-                      >
-                        {t.url.replace(/^https?:\/\//, "")}
-                      </a>
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-
-              <div className="rounded-2xl border border-[var(--lettura-bordo)] p-6">
-                <p className="text-sm leading-relaxed text-neutral-400">
-                  Non sai se questo strumento serve alla tua azienda? La prima valutazione è gratuita.
+                <p className="hub-mono" style={{ marginTop: 12, textTransform: "none", letterSpacing: 0, wordBreak: "break-all" }}>
+                  {t.url.replace(/^https?:\/\//, "")}
                 </p>
-                <Link
-                  href="/consulenza"
-                  className="mt-4 inline-block border-b border-neutral-700 pb-1 text-sm text-neutral-200 transition-colors hover:border-white hover:text-white"
-                >
-                  Parlane con noi &rarr;
-                </Link>
               </div>
 
-              <p className="px-1 text-[11.5px] leading-relaxed text-[var(--lettura-tenue)]">
-                Scheda redatta da ELEVIACOM. Prezzi e funzioni cambiano spesso: verifica sempre sul sito
-                ufficiale prima di sottoscrivere.
+              <div style={{ marginTop: 18 }}>
+                <span className="hub-mono hub-mono-nero">Anche in</span>
+                <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: "6px 14px" }}>
+                  {t.categories.slice(1).map((c) => (
+                    <Link key={c} href={VIA.tool} className="hub-mono">
+                      {etichettaCategoriaTool(c)}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              <p className="hub-mono" style={{ marginTop: 26, textTransform: "none", letterSpacing: 0, lineHeight: 1.5 }}>
+                Scheda redatta da{" "}
+                <a href={SITO_URL} style={{ borderBottom: "1px solid var(--filetto)" }}>
+                  ELEVIACOM
+                </a>
+                . Nessun rapporto commerciale con i fornitori citati.
               </p>
             </div>
           </aside>

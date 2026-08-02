@@ -1,4 +1,5 @@
-import { getAllPostsMeta, SITE_URL } from "@/lib/blog";
+import { getAllPostsMeta } from "@/lib/blog";
+import { HUB_URL, VIA } from "@/lib/hub";
 
 export const revalidate = 300;
 
@@ -9,7 +10,7 @@ function esc(s: string): string {
 export async function GET() {
   const posts = await getAllPostsMeta();
   const items = posts.map((p) => {
-    const url = `${SITE_URL}/blog/${p.slug}`;
+    const url = `${HUB_URL}${VIA.articolo(p.slug)}`;
     return `    <item>
       <title>${esc(p.title)}</title>
       <link>${url}</link>
@@ -23,11 +24,11 @@ ${p.tags.map((t) => `      <category>${esc(t)}</category>`).join("\n")}
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Blog ELEVIACOM</title>
-    <link>${SITE_URL}/blog</link>
-    <description>AI e automazione per PMI italiane</description>
+    <title>ELEVIACOM Hub</title>
+    <link>${HUB_URL}</link>
+    <description>News, guide e tool di intelligenza artificiale per le imprese italiane</description>
     <language>it-IT</language>
-    <atom:link href="${SITE_URL}/blog/rss.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="${HUB_URL}/rss.xml" rel="self" type="application/rss+xml" />
 ${items}
   </channel>
 </rss>`;

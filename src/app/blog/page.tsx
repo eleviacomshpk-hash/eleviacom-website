@@ -1,40 +1,32 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getAllPostsMeta, isoDay, SITE_URL } from "@/lib/blog";
+import { getAllPostsMeta, isoDay } from "@/lib/blog";
 import { CATEGORIE_ARTICOLI } from "@/lib/taxonomy";
 import { GUIDE, categorieGuideAttive } from "@/lib/guides";
 import { TOOLS, categorieToolAttive } from "@/lib/tools";
-import { BlogHeader } from "@/components/blog/blog-header";
-import { TitoloSezione } from "@/components/blog/cards";
-import { ListaArticoli, ListaGuide, ListaTool } from "@/components/blog/liste-filtrate";
-import { BloccoNewsletter } from "@/components/blog/newsletter";
+import { Sezione, Iscrizione } from "@/components/hub/pezzi";
+import { ElencoArticoli, ElencoGuide, ElencoTool } from "@/components/hub/elenchi";
+import { HUB_URL, SITO_URL, VIA, dataEstesa } from "@/lib/hub";
 
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Blog ELEVIACOM — News, guide e tool AI per le imprese italiane",
+  title: "ELEVIACOM Hub — AI per le imprese italiane: news, guide, tool",
   description:
-    "Le notizie sull'intelligenza artificiale che contano per un'impresa, le guide operative per applicarla e la directory dei tool, in italiano.",
-  alternates: {
-    canonical: `${SITE_URL}/blog`,
-    types: { "application/rss+xml": `${SITE_URL}/blog/rss.xml` },
-  },
+    "Le notizie sull'intelligenza artificiale che cambiano qualcosa in azienda, le guide operative per applicarla e una directory di 55 strumenti con prezzi reali e limiti dichiarati.",
+  alternates: { canonical: HUB_URL, types: { "application/rss+xml": `${HUB_URL}/rss.xml` } },
   openGraph: {
     type: "website",
-    url: `${SITE_URL}/blog`,
-    siteName: "ELEVIACOM",
+    url: HUB_URL,
+    siteName: "ELEVIACOM Hub",
     locale: "it_IT",
-    title: "Blog ELEVIACOM — News, guide e tool AI per le imprese italiane",
-    description:
-      "Le notizie sull'AI che contano per un'impresa, le guide operative per applicarla e la directory dei tool.",
+    title: "ELEVIACOM Hub — AI per le imprese italiane",
+    description: "News, guide operative e directory dei tool. In italiano, per chi deve decidere.",
   },
-  twitter: { card: "summary_large_image", title: "Blog ELEVIACOM" },
 };
 
-export default async function BlogHubPage() {
+export default async function HubHome() {
   const posts = await getAllPostsMeta();
-  const guide = GUIDE;
-  const tools = TOOLS;
 
   const categorieArticoli = CATEGORIE_ARTICOLI.filter((c) => posts.some((p) => p.category === c.slug)).map((c) => ({
     slug: c.slug,
@@ -42,157 +34,148 @@ export default async function BlogHubPage() {
     count: posts.filter((p) => p.category === c.slug).length,
   }));
 
+  const ultimo = posts[0];
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": "Blog",
-        name: "Blog ELEVIACOM",
-        url: `${SITE_URL}/blog`,
+        "@type": "WebSite",
+        name: "ELEVIACOM Hub",
+        url: HUB_URL,
         inLanguage: "it-IT",
-        publisher: { "@type": "Organization", name: "ELEVIACOM", url: SITE_URL },
+        publisher: { "@type": "Organization", name: "ELEVIACOM", url: SITO_URL },
+      },
+      {
+        "@type": "Blog",
+        name: "ELEVIACOM Hub",
+        url: HUB_URL,
+        inLanguage: "it-IT",
         blogPost: posts.slice(0, 20).map((p) => ({
           "@type": "BlogPosting",
           headline: p.title,
-          url: `${SITE_URL}/blog/${p.slug}`,
+          url: `${HUB_URL}${VIA.articolo(p.slug)}`,
           datePublished: isoDay(p.publishedAt),
           description: p.description,
         })),
-      },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
-          { "@type": "ListItem", position: 2, name: "Blog", item: `${SITE_URL}/blog` },
-        ],
       },
     ],
   };
 
   return (
-    <main className="lettura min-h-screen text-[var(--lettura-testo)]">
+    <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <BlogHeader />
 
-      {/* ── Apertura ─────────────────────────────────────────────── */}
-      <section className="border-b border-[var(--lettura-bordo)]">
-        <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
-          <p className="mb-5 text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--lettura-tenue)]">
-            News · Guide · Tool
-          </p>
-          <h1 className="max-w-4xl text-4xl font-bold leading-[1.08] tracking-tight text-[var(--lettura-titolo)] md:text-6xl">
-            L&apos;intelligenza artificiale spiegata a chi deve usarla in azienda.
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-neutral-400">
-            Cosa esce, perché conta per un&apos;impresa italiana e come si applica davvero.
-            Guide operative passo per passo e una directory di {tools.length} strumenti valutati sul campo.
-          </p>
-
-          <div className="mt-9 flex flex-wrap gap-3">
-            <Link
-              href="/blog/guide"
-              className="rounded-full bg-[#eef2f5] px-6 py-3 text-sm font-medium text-[#15191c] transition-colors hover:bg-white"
-            >
-              Parti dalle guide
-            </Link>
-            <Link
-              href="/blog/tool"
-              className="rounded-full border border-[var(--lettura-bordo)] px-6 py-3 text-sm text-neutral-300 transition-colors hover:border-neutral-500 hover:text-white"
-            >
-              Esplora i tool
-            </Link>
+      {/* ── Apertura ────────────────────────────────────────────── */}
+      <section className="hub-apertura">
+        <div className="hub-larghezza">
+          <div className="hub-occhiello-riga">
+            <span className="hub-mono hub-mono-nero">Intelligenza artificiale applicata</span>
+            <span className="hub-mono">Imprese italiane</span>
+            <span className="hub-mono" style={{ marginLeft: "auto" }}>
+              {ultimo ? `Aggiornato il ${dataEstesa(ultimo.publishedAt)}` : "In aggiornamento"}
+            </span>
           </div>
 
-          <dl className="mt-14 grid max-w-2xl grid-cols-3 gap-6 border-t border-[var(--lettura-bordo)] pt-8">
-            {[
-              { n: posts.length, l: "articoli" },
-              { n: guide.length, l: "guide operative" },
-              { n: tools.length, l: "tool schedati" },
-            ].map((s) => (
-              <div key={s.l}>
-                <dt className="sr-only">{s.l}</dt>
-                <dd>
-                  <span className="block text-2xl font-semibold text-[var(--lettura-titolo)] md:text-3xl">
-                    {s.n}
-                  </span>
-                  <span className="mt-1 block text-[13px] text-[var(--lettura-tenue)]">{s.l}</span>
-                </dd>
+          <div className="hub-doppia" style={{ paddingBlock: "58px 54px" }}>
+            <div>
+              <h1 className="hub-titolo">
+                Quello che l&apos;AI cambia in azienda, <em>senza il rumore</em> intorno.
+              </h1>
+              <p className="hub-sommario">
+                Le notizie che spostano una decisione, le procedure per applicarle e gli strumenti che
+                le reggono. Scritto per chi manda avanti un&apos;impresa, non per chi segue il settore.
+              </p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 32 }}>
+                <Link href={VIA.guide} className="hub-bottone hub-bottone--pieno">
+                  Parti dalle guide
+                </Link>
+                <Link href={VIA.tool} className="hub-bottone">
+                  Directory dei tool
+                </Link>
               </div>
-            ))}
-          </dl>
+            </div>
+
+            <div>
+              <span className="hub-mono hub-mono-nero">In questo hub</span>
+              <ul className="hub-indice" style={{ marginTop: 12 }}>
+                <li>
+                  <Link href={VIA.articoli}>Articoli</Link>
+                  <span className="hub-mono">{String(posts.length).padStart(2, "0")}</span>
+                </li>
+                <li>
+                  <Link href={VIA.guide}>Guide operative</Link>
+                  <span className="hub-mono">{String(GUIDE.length).padStart(2, "0")}</span>
+                </li>
+                <li>
+                  <Link href={VIA.tool}>Tool schedati</Link>
+                  <span className="hub-mono">{TOOLS.length}</span>
+                </li>
+                <li>
+                  <a href={VIA.rss}>Feed RSS</a>
+                  <span className="hub-mono">XML</span>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ── Ultimi articoli ──────────────────────────────────────── */}
-      <section className="border-b border-[var(--lettura-bordo)]">
-        <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
-          <TitoloSezione
-            occhiello="Ultimi articoli"
-            titolo="Cosa è successo e cosa cambia per te"
-            testo="Analisi brevi su normativa, modelli e automazione, scritte per chi deve prendere una decisione, non per chi segue il settore."
-            href="/blog/articoli"
-            hrefLabel="Tutti gli articoli"
-          />
-          {posts.length === 0 ? (
-            <p className="text-sm text-[var(--lettura-tenue)]">Nessun articolo pubblicato.</p>
-          ) : (
-            <ListaArticoli posts={posts} categorie={categorieArticoli} limite={6} />
-          )}
-        </div>
-      </section>
-
-      {/* ── Guide ────────────────────────────────────────────────── */}
-      <section className="border-b border-[var(--lettura-bordo)]">
-        <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
-          <TitoloSezione
-            occhiello="Guide"
-            titolo="Automatizza il lavoro, passo per passo"
-            testo="Procedure complete per mestiere: cosa serve, cosa fare e cosa si ottiene alla fine. Ogni guida indica i tool usati e quanto tempo richiede."
-            href="/blog/guide"
-            hrefLabel="Tutte le guide"
-          />
-          <ListaGuide guide={guide} categorie={categorieGuideAttive()} limite={6} />
-        </div>
-      </section>
-
-      {/* ── Tool di tendenza ─────────────────────────────────────── */}
-      <section className="border-b border-[var(--lettura-bordo)]">
-        <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
-          <TitoloSezione
-            occhiello="Tool di tendenza"
-            titolo="Gli strumenti che vale la pena conoscere"
-            testo="Directory ragionata: cosa fa ogni strumento, quanto costa davvero e in quali casi conviene. Con i limiti dichiarati, non solo i pregi."
-            href="/blog/tool"
-            hrefLabel="Tutta la directory"
-          />
-          <ListaTool tools={tools} categorie={categorieToolAttive()} limite={12} />
-        </div>
-      </section>
-
-      {/* ── Newsletter e consulenza ──────────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-6 py-16 md:py-20">
-        <BloccoNewsletter />
-
-        <div className="mt-6 rounded-3xl border border-[var(--lettura-bordo)] p-8 md:p-12">
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--lettura-tenue)]">
-            ELEVIACOM
+      {/* ── Articoli ────────────────────────────────────────────── */}
+      <Sezione
+        numero="§ 01"
+        titolo="Ultimi articoli"
+        nota="Cosa è successo, perché conta per un'impresa italiana e cosa conviene fare. Con le fonti in fondo."
+        href={VIA.articoli}
+        hrefLabel="Tutti gli articoli"
+      >
+        {posts.length === 0 ? (
+          <p className="hub-mono" style={{ paddingBlock: 40 }}>
+            Nessun articolo pubblicato.
           </p>
-          <h2 className="mt-3 max-w-2xl text-2xl font-semibold tracking-tight text-[var(--lettura-titolo)] md:text-3xl">
-            Se una di queste guide descrive un problema che hai, possiamo costruirla noi.
-          </h2>
-          <p className="mt-3 max-w-2xl leading-relaxed text-neutral-400">
-            Progettiamo chatbot, automazioni e agenti AI su misura per PMI italiane.
-            La prima valutazione è gratuita e finisce con un documento, non con un preventivo.
-          </p>
-          <Link
-            href="/consulenza"
-            className="group mt-7 inline-flex items-center gap-2 rounded-full border border-[var(--lettura-bordo)] px-6 py-3 text-sm text-neutral-200 transition-colors hover:border-neutral-500 hover:text-white"
-          >
-            Richiedi una consulenza
-            <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">
-              &rarr;
-            </span>
-          </Link>
+        ) : (
+          <ElencoArticoli posts={posts} categorie={categorieArticoli} limite={6} conLead />
+        )}
+      </Sezione>
+
+      {/* ── Guide ───────────────────────────────────────────────── */}
+      <Sezione
+        numero="§ 02"
+        titolo="Guide operative"
+        nota="Procedure complete per mestiere: cosa serve prima di iniziare, i passi, e cosa si ottiene alla fine."
+        href={VIA.guide}
+        hrefLabel="Tutte le guide"
+      >
+        <ElencoGuide guide={GUIDE} categorie={categorieGuideAttive()} limite={6} />
+      </Sezione>
+
+      {/* ── Tool ────────────────────────────────────────────────── */}
+      <Sezione
+        numero="§ 03"
+        titolo="Directory dei tool"
+        nota="Cosa fa ogni strumento, quanto costa davvero e dove sono i limiti. I limiti sono la parte che manca alle altre directory."
+        href={VIA.tool}
+        hrefLabel="Tutta la directory"
+      >
+        <ElencoTool tools={TOOLS} categorie={categorieToolAttive()} limite={14} />
+      </Sezione>
+
+      {/* ── Coda ────────────────────────────────────────────────── */}
+      <section className="hub-sezione">
+        <div className="hub-larghezza" style={{ paddingBlock: "48px 8px" }}>
+          <div className="hub-doppia">
+            <Iscrizione />
+            <div className="hub-riquadro hub-riquadro--carta">
+              <span className="hub-mono hub-mono-accento">ELEVIACOM</span>
+              <p style={{ marginTop: 12, fontSize: 16.5, lineHeight: 1.5 }}>
+                Se una di queste guide descrive un problema che hai, possiamo costruirla, collaudarla e
+                mantenerla noi.
+              </p>
+              <a href={`${SITO_URL}/consulenza`} className="hub-bottone" style={{ marginTop: 20 }}>
+                Richiedi una consulenza
+              </a>
+            </div>
+          </div>
         </div>
       </section>
     </main>

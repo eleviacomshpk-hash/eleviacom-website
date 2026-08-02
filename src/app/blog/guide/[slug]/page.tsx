@@ -1,19 +1,10 @@
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { SITE_URL } from "@/lib/blog";
-import {
-  GUIDE,
-  ETICHETTE_DIFFICOLTA,
-  etichettaCategoriaGuida,
-  getGuida,
-} from "@/lib/guides";
-import { getTool, logoTool } from "@/lib/tools";
-import { BlogHeader } from "@/components/blog/blog-header";
-import { Briciole } from "@/components/blog/briciole";
-import { GuidaCard, Pillola, TitoloSezione } from "@/components/blog/cards";
-import { BloccoNewsletter } from "@/components/blog/newsletter";
+import { GUIDE, ETICHETTE_DIFFICOLTA, etichettaCategoriaGuida, getGuida } from "@/lib/guides";
+import { getTool, etichettaCategoriaTool } from "@/lib/tools";
+import { Briciole, Iscrizione, Marchio } from "@/components/hub/pezzi";
+import { HUB_URL, SITO_URL, VIA, dataEstesa } from "@/lib/hub";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -24,28 +15,24 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const g = getGuida(slug);
-  if (!g) return { title: "Guida non trovata — ELEVIACOM" };
-  const url = `${SITE_URL}/blog/guide/${g.slug}`;
-  const img = `${SITE_URL}/blog/guida/${g.slug}.jpg`;
+  if (!g) return { title: "Guida non trovata — ELEVIACOM Hub" };
   return {
-    title: `${g.title} — Guida ELEVIACOM`,
+    title: `${g.title} — Guida | ELEVIACOM Hub`,
     description: g.description,
-    alternates: { canonical: url },
+    alternates: { canonical: `${HUB_URL}${VIA.guida(g.slug)}` },
     openGraph: {
       type: "article",
-      url,
-      siteName: "ELEVIACOM",
+      url: `${HUB_URL}${VIA.guida(g.slug)}`,
+      siteName: "ELEVIACOM Hub",
       locale: "it_IT",
       title: g.title,
       description: g.description,
       publishedTime: g.publishedAt,
-      images: [{ url: img, width: 1200, height: 675, alt: g.title }],
     },
-    twitter: { card: "summary_large_image", title: g.title, description: g.description, images: [img] },
   };
 }
 
-export default async function GuidaDetailPage({ params }: Props) {
+export default async function SchedaGuida({ params }: Props) {
   const { slug } = await params;
   const g = getGuida(slug);
   if (!g) notFound();
@@ -54,7 +41,7 @@ export default async function GuidaDetailPage({ params }: Props) {
   const correlate = GUIDE.filter(
     (x) => x.slug !== g.slug && x.categories.some((c) => g.categories.includes(c))
   ).slice(0, 3);
-  const url = `${SITE_URL}/blog/guide/${g.slug}`;
+  const url = `${HUB_URL}${VIA.guida(g.slug)}`;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -65,10 +52,9 @@ export default async function GuidaDetailPage({ params }: Props) {
         description: g.description,
         inLanguage: "it-IT",
         totalTime: `PT${g.minutes}M`,
-        image: `${SITE_URL}/blog/guida/${g.slug}.jpg`,
         datePublished: g.publishedAt,
-        author: { "@type": "Organization", name: "ELEVIACOM", url: SITE_URL },
-        publisher: { "@type": "Organization", name: "ELEVIACOM", url: SITE_URL },
+        author: { "@type": "Organization", name: "ELEVIACOM", url: SITO_URL },
+        publisher: { "@type": "Organization", name: "ELEVIACOM", url: SITO_URL },
         mainEntityOfPage: { "@type": "WebPage", "@id": url },
         supply: g.requirements.map((r) => ({ "@type": "HowToSupply", name: r })),
         tool: strumenti.map((t) => ({ "@type": "HowToTool", name: t.name })),
@@ -83,10 +69,9 @@ export default async function GuidaDetailPage({ params }: Props) {
       {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
-          { "@type": "ListItem", position: 2, name: "Blog", item: `${SITE_URL}/blog` },
-          { "@type": "ListItem", position: 3, name: "Guide", item: `${SITE_URL}/blog/guide` },
-          { "@type": "ListItem", position: 4, name: g.title, item: url },
+          { "@type": "ListItem", position: 1, name: "Hub", item: HUB_URL },
+          { "@type": "ListItem", position: 2, name: "Guide", item: `${HUB_URL}${VIA.guide}` },
+          { "@type": "ListItem", position: 3, name: g.title, item: url },
         ],
       },
       ...(g.faq.length
@@ -105,152 +90,121 @@ export default async function GuidaDetailPage({ params }: Props) {
   };
 
   return (
-    <main className="lettura min-h-screen text-[var(--lettura-testo)]">
+    <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <BlogHeader />
 
-      <div className="mx-auto max-w-6xl px-6 py-10 md:py-14">
+      <div className="hub-larghezza">
         <Briciole
           voci={[
-            { label: "Blog", href: "/blog" },
-            { label: "Guide", href: "/blog/guide" },
-            { label: etichettaCategoriaGuida(g.category), href: "/blog/guide" },
-            { label: g.title.length > 42 ? g.title.slice(0, 42) + "…" : g.title },
+            { label: "Guide", href: VIA.guide },
+            { label: etichettaCategoriaGuida(g.category), href: VIA.guide },
+            { label: g.title.length > 38 ? `${g.title.slice(0, 38)}…` : g.title },
           ]}
         />
 
-        <div className="mt-8 gap-12 lg:grid lg:grid-cols-[minmax(0,1fr)_17rem]">
-          <article className="min-w-0">
-            <div className="mb-6 flex flex-wrap items-center gap-2">
-              <Pillola tono="acceso">{etichettaCategoriaGuida(g.category)}</Pillola>
-              <Pillola>{ETICHETTE_DIFFICOLTA[g.difficulty]}</Pillola>
-              <span className="text-[13px] text-[var(--lettura-tenue)]">{g.minutes} minuti</span>
+        <div className="hub-doppia" style={{ paddingBlock: "44px 72px" }}>
+          <article>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 18px", marginBottom: 18 }}>
+              <span className="hub-mono hub-mono-accento">{etichettaCategoriaGuida(g.category)}</span>
+              <span className="hub-mono">{ETICHETTE_DIFFICOLTA[g.difficulty]}</span>
+              <span className="hub-mono">{g.minutes} minuti</span>
+              <span className="hub-mono">{g.steps.length} passi</span>
             </div>
 
-            <h1 className="text-3xl font-bold leading-[1.14] tracking-tight text-[var(--lettura-titolo)] md:text-[2.75rem]">
+            <h1 className="hub-titolo" style={{ fontSize: "clamp(2.1rem, 4.7vw, 3.5rem)" }}>
               {g.title}
             </h1>
-            <p className="mt-5 text-lg leading-relaxed text-neutral-400">{g.description}</p>
+            <p className="hub-sommario">{g.description}</p>
 
-            <div className="relative mt-9 aspect-[16/9] w-full overflow-hidden rounded-2xl border border-[var(--lettura-bordo)]">
-              <Image
-                src={`/blog/guida/${g.slug}.jpg`}
-                alt={g.title}
-                fill
-                priority
-                sizes="(max-width: 1024px) 100vw, 768px"
-                className="object-cover"
-              />
+            <div className="hub-prosa" style={{ marginTop: 34 }}>
+              <p>{g.intro}</p>
             </div>
 
-            <p className="mt-9 text-[17px] leading-relaxed text-neutral-300">{g.intro}</p>
-
-            <section className="mt-10 rounded-2xl border border-[var(--lettura-bordo)] lettura-superficie p-6">
-              <h2 className="text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--lettura-tenue)]">
-                Cosa ottieni
-              </h2>
-              <p className="mt-3 text-[15px] leading-relaxed text-neutral-200">{g.outcome}</p>
+            <section
+              style={{
+                marginTop: 34,
+                paddingBlock: 20,
+                borderTop: "1px solid var(--filetto-forte)",
+                borderBottom: "1px solid var(--filetto-forte)",
+              }}
+            >
+              <span className="hub-mono hub-mono-accento">Cosa ottieni</span>
+              <p style={{ marginTop: 8, fontSize: 18, lineHeight: 1.5, maxWidth: "58ch" }}>{g.outcome}</p>
             </section>
 
-            <section className="mt-10">
-              <h2 className="mb-4 text-lg font-semibold text-[var(--lettura-titolo)]">Cosa serve prima di iniziare</h2>
-              <ul className="space-y-2.5">
+            <section style={{ marginTop: 40 }}>
+              <h2 className="hub-mono hub-mono-nero" style={{ marginBottom: 4 }}>
+                Cosa serve prima di iniziare
+              </h2>
+              <ul className="hub-lista-filetti">
                 {g.requirements.map((r, i) => (
-                  <li key={i} className="flex gap-3.5 text-[15px] leading-relaxed text-neutral-300">
-                    <span aria-hidden="true" className="mt-[0.62em] h-px w-3.5 shrink-0 bg-neutral-700" />
+                  <li key={i}>
                     <span>{r}</span>
                   </li>
                 ))}
               </ul>
             </section>
 
-            <section className="mt-14">
-              <h2 className="mb-8 text-xl font-semibold text-[var(--lettura-titolo)]">I passi</h2>
-              <ol className="space-y-9">
+            <section style={{ marginTop: 52 }}>
+              <h2 className="hub-sezione-titolo" style={{ marginBottom: 20 }}>
+                I passi
+              </h2>
+              <div className="hub-passi">
                 {g.steps.map((p, i) => (
-                  <li key={i} id={`passo-${i + 1}`} className="scroll-mt-24">
-                    <div className="flex gap-5">
-                      <span
-                        aria-hidden="true"
-                        className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--lettura-bordo)] text-[13px] font-medium tabular-nums text-neutral-400"
-                      >
-                        {i + 1}
-                      </span>
-                      <div className="min-w-0">
-                        <h3 className="text-[17px] font-semibold leading-snug text-[var(--lettura-titolo)]">
-                          {p.titolo}
-                        </h3>
-                        <p className="mt-2.5 text-[15.5px] leading-[1.8] text-neutral-300">{p.testo}</p>
-                      </div>
+                  <div key={i} id={`passo-${i + 1}`} className="hub-passo" style={{ scrollMarginTop: 74 }}>
+                    <span className="hub-passo-num" aria-hidden="true" />
+                    <div>
+                      <h3>{p.titolo}</h3>
+                      <p>{p.testo}</p>
                     </div>
-                  </li>
+                  </div>
                 ))}
-              </ol>
+              </div>
             </section>
 
             {g.faq.length > 0 && (
-              <section className="mt-16 border-t border-[var(--lettura-bordo)] pt-12">
-                <h2 className="mb-7 text-xl font-semibold text-[var(--lettura-titolo)]">Domande frequenti</h2>
-                <div className="divide-y divide-[var(--lettura-bordo)]">
-                  {g.faq.map((f, i) => (
-                    <details key={i} className="group py-5" open={i === 0}>
-                      <summary className="flex cursor-pointer list-none items-start justify-between gap-4 text-base font-medium text-[var(--lettura-titolo)]">
-                        <span>{f.question}</span>
-                        <span
-                          aria-hidden="true"
-                          className="mt-1 shrink-0 text-[var(--lettura-tenue)] transition-transform group-open:rotate-45"
-                        >
-                          +
-                        </span>
-                      </summary>
-                      <p className="mt-3 leading-relaxed text-neutral-400">{f.answer}</p>
-                    </details>
-                  ))}
-                </div>
+              <section style={{ marginTop: 52 }}>
+                <h2 className="hub-sezione-titolo" style={{ marginBottom: 8 }}>
+                  Domande frequenti
+                </h2>
+                {g.faq.map((f, i) => (
+                  <details key={i} className="hub-dettagli" open={i === 0}>
+                    <summary>{f.question}</summary>
+                    <p>{f.answer}</p>
+                  </details>
+                ))}
               </section>
             )}
 
-            <section className="mt-16 border-t border-[var(--lettura-bordo)] pt-10">
-              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--lettura-tenue)]">
-                ELEVIACOM
+            <section
+              style={{ marginTop: 52, paddingTop: 26, borderTop: "1px solid var(--filetto-forte)" }}
+            >
+              <span className="hub-mono hub-mono-accento">ELEVIACOM</span>
+              <p style={{ marginTop: 10, fontSize: 18, lineHeight: 1.5, maxWidth: "48ch" }}>
+                Se preferisci che questo flusso venga costruito, collaudato e mantenuto da qualcuno, è
+                esattamente quello che facciamo.
               </p>
-              <p className="mt-4 max-w-xl text-lg leading-relaxed text-neutral-300">
-                Se preferisci che questo flusso venga costruito, collaudato e mantenuto da qualcuno,
-                è esattamente quello che facciamo.
-              </p>
-              <Link
-                href="/consulenza"
-                className="group mt-6 inline-flex items-center gap-2 border-b border-neutral-700 pb-1 text-sm text-[var(--lettura-titolo)] transition-colors hover:border-white"
-              >
+              <a href={`${SITO_URL}/consulenza`} className="hub-bottone" style={{ marginTop: 20 }}>
                 Richiedi una consulenza
-                <span aria-hidden="true" className="transition-transform duration-200 group-hover:translate-x-1">
-                  &rarr;
-                </span>
-              </Link>
+              </a>
             </section>
           </article>
 
-          {/* ── Pannello laterale ──────────────────────────────── */}
-          <aside className="mt-12 lg:mt-0">
-            <div className="sticky top-24 space-y-4">
-              <div className="rounded-2xl border border-[var(--lettura-bordo)] lettura-superficie p-6">
-                <h2 className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--lettura-tenue)]">
-                  Tool usati
-                </h2>
-                <ul className="mt-4 space-y-3">
+          {/* ── Scheda tecnica ─────────────────────────────────── */}
+          <aside>
+            <div style={{ position: "sticky", top: 74 }}>
+              <div className="hub-riquadro">
+                <span className="hub-mono hub-mono-nero">Tool usati</span>
+                <ul style={{ marginTop: 12 }}>
                   {strumenti.map((t) => (
-                    <li key={t.slug}>
-                      <Link href={`/blog/tool/${t.slug}`} className="group flex items-center gap-3">
-                        <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-lg ring-1 ring-white/10">
-                          <Image src={logoTool(t.slug)} alt="" fill sizes="36px" className="object-cover" />
+                    <li key={t.slug} style={{ borderBottom: "1px solid var(--filetto)", paddingBlock: 10 }}>
+                      <Link href={VIA.scheda(t.slug)} style={{ display: "flex", gap: 11, alignItems: "baseline" }}>
+                        <span style={{ display: "inline-flex", width: 15, height: 15, flex: "none" }}>
+                          <Marchio slug={t.slug} titolo={t.name} />
                         </span>
-                        <span className="min-w-0">
-                          <span className="block truncate text-sm font-medium text-neutral-200 transition-colors group-hover:text-white">
-                            {t.name}
-                          </span>
-                          <span className="block truncate text-[11.5px] text-[var(--lettura-tenue)]">
-                            {t.tagline}
-                          </span>
+                        <span>
+                          <span style={{ display: "block", fontSize: 15.5 }}>{t.name}</span>
+                          <span className="hub-tool-cat">{etichettaCategoriaTool(t.categories[0])}</span>
                         </span>
                       </Link>
                     </li>
@@ -258,40 +212,54 @@ export default async function GuidaDetailPage({ params }: Props) {
                 </ul>
               </div>
 
-              <div className="rounded-2xl border border-[var(--lettura-bordo)] p-6">
-                <dl className="space-y-3.5 text-sm">
-                  <div className="flex justify-between gap-3">
-                    <dt className="text-[var(--lettura-tenue)]">Difficoltà</dt>
-                    <dd className="text-neutral-300">{ETICHETTE_DIFFICOLTA[g.difficulty]}</dd>
-                  </div>
-                  <div className="flex justify-between gap-3">
-                    <dt className="text-[var(--lettura-tenue)]">Tempo</dt>
-                    <dd className="text-neutral-300">{g.minutes} min</dd>
-                  </div>
-                  <div className="flex justify-between gap-3">
-                    <dt className="text-[var(--lettura-tenue)]">Passi</dt>
-                    <dd className="text-neutral-300">{g.steps.length}</dd>
-                  </div>
-                </dl>
+              <div className="hub-riquadro hub-riquadro--carta" style={{ marginTop: 18 }}>
+                <ul className="hub-indice">
+                  <li>
+                    <span className="hub-mono">Difficoltà</span>
+                    <span>{ETICHETTE_DIFFICOLTA[g.difficulty]}</span>
+                  </li>
+                  <li>
+                    <span className="hub-mono">Tempo</span>
+                    <span>{g.minutes} min</span>
+                  </li>
+                  <li>
+                    <span className="hub-mono">Pubblicata</span>
+                    <span style={{ fontSize: 14 }}>{dataEstesa(g.publishedAt)}</span>
+                  </li>
+                </ul>
               </div>
             </div>
           </aside>
         </div>
 
         {correlate.length > 0 && (
-          <section className="mt-20 border-t border-[var(--lettura-bordo)] pt-12">
-            <TitoloSezione titolo="Guide collegate" href="/blog/guide" hrefLabel="Tutte le guide" />
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {correlate.map((c) => (
-                <GuidaCard key={c.slug} guida={c} />
+          <section style={{ paddingBottom: 56 }}>
+            <h2 className="hub-sezione-titolo" style={{ paddingBottom: 14, borderBottom: "1px solid var(--filetto-forte)" }}>
+              Guide collegate
+            </h2>
+            <div className="hub-elenco" style={{ borderTop: 0 }}>
+              {correlate.map((c, i) => (
+                <Link key={c.slug} href={VIA.guida(c.slug)} className="hub-riga">
+                  <span className="hub-riga-num">{String(i + 1).padStart(2, "0")}</span>
+                  <div>
+                    <h3 className="hub-riga-titolo" style={{ fontSize: "1.15rem" }}>
+                      {c.title}
+                    </h3>
+                    <p className="hub-riga-testo">{c.description}</p>
+                  </div>
+                  <div className="hub-riga-meta">
+                    <span className="hub-mono hub-mono-accento">{etichettaCategoriaGuida(c.category)}</span>
+                    <span className="hub-mono">{c.minutes} min</span>
+                  </div>
+                </Link>
               ))}
             </div>
           </section>
         )}
 
-        <div className="mt-14">
-          <BloccoNewsletter compatto />
-        </div>
+        <section style={{ paddingBottom: 24 }}>
+          <Iscrizione compatta />
+        </section>
       </div>
     </main>
   );
