@@ -104,7 +104,7 @@ export default async function BlogPostPage({ params }: Props) {
         <div className="relative h-[32vh] min-h-[220px] w-full overflow-hidden md:h-[40vh]">
           <Image src={post.cover} alt={post.coverAlt ?? post.title} fill priority
             sizes="100vw" className="object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/35 to-black" />
         </div>
       )}
 
