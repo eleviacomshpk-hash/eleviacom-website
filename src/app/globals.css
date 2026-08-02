@@ -92,9 +92,23 @@ input::placeholder {
 }
 
 
+
+/* ── Ambiente di lettura del blog ───────────────────────────── */
+/* Non nero puro: il testo chiaro su fondo assoluto crea alone e affatica. */
+:root {
+  --lettura-fondo:     #15191c;  /* pagina */
+  --lettura-superficie:#1e2428;  /* riquadri in rilievo */
+  --lettura-bordo:     #2c3338;  /* filetti */
+  --lettura-testo:     #b6bfc6;  /* corpo */
+  --lettura-titolo:    #f2f5f7;  /* titoli, non bianco puro */
+  --lettura-tenue:     #7c868d;  /* metadati */
+}
+.lettura { background-color: var(--lettura-fondo); }
+.lettura-superficie { background-color: var(--lettura-superficie); }
+
 /* ── Blog: tipografia di lettura ────────────────────────────── */
 .blog-prose {
-  color: #b8b8bd;
+  color: var(--lettura-testo);
   font-size: 1.0625rem;
   line-height: 1.85;
   letter-spacing: 0.003em;
@@ -108,14 +122,14 @@ input::placeholder {
 .blog-prose > p:first-child {
   font-size: 1.1875rem;
   line-height: 1.75;
-  color: #d4d4d8;
+  color: #d3dae0;
 }
 @media (min-width: 768px) {
   .blog-prose > p:first-child { font-size: 1.3125rem; }
 }
 
 .blog-prose h2 {
-  color: #ffffff;
+  color: var(--lettura-titolo);
   font-size: 1.5rem;
   font-weight: 600;
   line-height: 1.25;
@@ -140,17 +154,17 @@ input::placeholder {
 @media (min-width: 1024px) { .blog-prose h2:hover::before { opacity: 1; } }
 
 .blog-prose h3 {
-  color: #ffffff;
+  color: var(--lettura-titolo);
   font-size: 1.1875rem;
   font-weight: 600;
   margin-top: 2.5rem;
   margin-bottom: 0.75rem;
   scroll-margin-top: 6rem;
 }
-.blog-prose strong { color: #ffffff; font-weight: 600; }
+.blog-prose strong { color: var(--lettura-titolo); font-weight: 600; }
 .blog-prose em { color: #d4d4d8; }
 .blog-prose a {
-  color: #ffffff;
+  color: var(--lettura-titolo);
   text-decoration: none;
   background-image: linear-gradient(#52525b, #52525b);
   background-size: 100% 1px;
@@ -188,7 +202,7 @@ input::placeholder {
 /* Citazione: usata come blocco di rilievo */
 .blog-prose blockquote {
   border: none;
-  border-left: 1px solid #3f3f46;
+  border-left: 1px solid #46505a;
   margin-top: 2.5rem;
   margin-bottom: 2.5rem;
   padding: 0.25rem 0 0.25rem 1.75rem;
@@ -201,16 +215,16 @@ input::placeholder {
 .blog-prose blockquote p { margin: 0; }
 
 .blog-prose code {
-  background: #111114;
-  border: 1px solid #26262a;
+  background: #1b2126;
+  border: 1px solid var(--lettura-bordo);
   border-radius: 0.3rem;
   padding: 0.15rem 0.4rem;
   font-size: 0.875em;
   color: #e4e4e7;
 }
 .blog-prose pre {
-  background: #08080a;
-  border: 1px solid #26262a;
+  background: #10151a;
+  border: 1px solid var(--lettura-bordo);
   border-radius: 0.75rem;
   padding: 1.25rem;
   overflow-x: auto;
@@ -222,7 +236,7 @@ input::placeholder {
 .blog-prose img {
   width: 100%; height: auto;
   border-radius: 0.75rem;
-  border: 1px solid #26262a;
+  border: 1px solid var(--lettura-bordo);
   margin-top: 2.5rem;
 }
 .blog-prose figure { margin-top: 2.5rem; }
@@ -248,15 +262,15 @@ input::placeholder {
   margin-top: 2rem;
 }
 .blog-prose th, .blog-prose td {
-  border-bottom: 1px solid #1c1c1f;
+  border-bottom: 1px solid var(--lettura-bordo);
   padding: 0.75rem 0.875rem;
   text-align: left;
   line-height: 1.6;
 }
 .blog-prose thead th {
-  color: #ffffff; font-weight: 600;
+  color: var(--lettura-titolo); font-weight: 600;
   font-size: 0.8125rem; text-transform: uppercase;
-  letter-spacing: 0.05em; border-bottom-color: #2c2c2e;
+  letter-spacing: 0.05em; border-bottom-color: var(--lettura-bordo);
 }
 .blog-prose tbody tr:hover { background: rgba(255, 255, 255, 0.02); }
 

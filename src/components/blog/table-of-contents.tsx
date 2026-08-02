@@ -47,8 +47,8 @@ export function TableOfContents({ items, variant }: Props) {
             className={
               "block border-l-2 pl-3 leading-snug transition-colors " +
               (active === i.id
-                ? "border-primary text-white"
-                : "border-transparent text-neutral-500 hover:text-neutral-300")
+                ? "border-primary text-[var(--lettura-titolo)]"
+                : "border-transparent text-[var(--lettura-tenue)] hover:text-neutral-300")
             }
           >
             {i.text}
@@ -61,7 +61,7 @@ export function TableOfContents({ items, variant }: Props) {
   if (variant === "desktop") {
     return (
       <>
-        <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-neutral-600">
+        <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-[var(--lettura-tenue)]">
           In questo articolo
         </p>
         <nav>{list}</nav>
@@ -70,20 +70,20 @@ export function TableOfContents({ items, variant }: Props) {
   }
 
   return (
-    <div className="mb-10 rounded-lg border border-border bg-card xl:hidden">
+    <div className="mb-10 rounded-lg border border-[var(--lettura-bordo)] lettura-superficie xl:hidden">
       <button
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         className="flex w-full items-center justify-between px-5 py-3.5 text-left"
       >
-        <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+        <span className="text-xs font-semibold uppercase tracking-wider text-[var(--lettura-tenue)]">
           Indice dell&apos;articolo
         </span>
-        <span className={"text-neutral-500 transition-transform " + (open ? "rotate-180" : "")}>
+        <span className={"text-[var(--lettura-tenue)] transition-transform " + (open ? "rotate-180" : "")}>
           &#9662;
         </span>
       </button>
-      {open && <div className="border-t border-border px-5 py-4">{list}</div>}
+      {open && <div className="border-t border-[var(--lettura-bordo)] px-5 py-4">{list}</div>}
     </div>
   );
 }

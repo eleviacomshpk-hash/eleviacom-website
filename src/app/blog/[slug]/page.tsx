@@ -94,7 +94,7 @@ export default async function BlogPostPage({ params }: Props) {
   }
 
   return (
-    <main className="min-h-screen bg-black text-neutral-300">
+    <main className="lettura min-h-screen text-[var(--lettura-testo)]">
       <ReadingProgress />
       <script type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@graph": graph }) }} />
@@ -104,13 +104,13 @@ export default async function BlogPostPage({ params }: Props) {
         <div className="relative h-[32vh] min-h-[220px] w-full overflow-hidden md:h-[40vh]">
           <Image src={post.cover} alt={post.coverAlt ?? post.title} fill priority
             sizes="100vw" className="object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/35 to-black" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#15191c]/40 to-[#15191c]" />
         </div>
       )}
 
       <div className="mx-auto w-full max-w-6xl px-6 pb-24 pt-10">
         <Link href="/blog"
-          className="mb-8 inline-block text-sm text-neutral-500 transition-colors hover:text-white">
+          className="mb-8 inline-block text-sm text-[var(--lettura-tenue)] transition-colors hover:text-[var(--lettura-titolo)]">
           &larr; Torna al blog
         </Link>
 
@@ -120,7 +120,7 @@ export default async function BlogPostPage({ params }: Props) {
         <article id="articolo">
           <header className="mb-12">
             {post.tags.length > 0 && (
-              <div className="mb-5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] uppercase tracking-[0.14em] text-neutral-500">
+              <div className="mb-5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] uppercase tracking-[0.14em] text-[var(--lettura-tenue)]">
                 {post.tags.slice(0, 3).map((t, i) => (
                   <span key={t} className="flex items-center gap-2.5">
                     {i > 0 && <span aria-hidden="true" className="text-neutral-700">/</span>}
@@ -129,9 +129,9 @@ export default async function BlogPostPage({ params }: Props) {
                 ))}
               </div>
             )}
-            <h1 className="text-3xl font-bold leading-[1.15] text-white md:text-5xl">{post.title}</h1>
+            <h1 className="text-3xl font-bold leading-[1.15] text-[var(--lettura-titolo)] md:text-5xl">{post.title}</h1>
             <p className="mt-5 text-lg leading-relaxed text-neutral-400">{post.description}</p>
-            <div className="mt-6 flex items-center gap-3 border-t border-border pt-5 text-xs text-neutral-500">
+            <div className="mt-6 flex items-center gap-3 border-t border-[var(--lettura-bordo)] pt-5 text-xs text-[var(--lettura-tenue)]">
               <span className="font-medium text-neutral-400">{post.author}</span>
               <span aria-hidden="true">&middot;</span>
               <time dateTime={isoDay(post.publishedAt)}>{formatDate(post.publishedAt)}</time>
@@ -141,8 +141,8 @@ export default async function BlogPostPage({ params }: Props) {
           </header>
 
           {post.keyTakeaways.length > 0 && (
-            <section className="mb-14 border-y border-border py-8">
-              <h2 className="mb-5 text-[11px] font-medium uppercase tracking-[0.16em] text-neutral-500">
+            <section className="mb-14 border-y border-[var(--lettura-bordo)] py-8">
+              <h2 className="mb-5 text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--lettura-tenue)]">
                 In sintesi
               </h2>
               <ul className="space-y-3.5">
@@ -161,15 +161,15 @@ export default async function BlogPostPage({ params }: Props) {
           <div className="blog-prose" dangerouslySetInnerHTML={{ __html: post.html }} />
 
           {post.faq.length > 0 && (
-            <section className="mt-20 border-t border-border pt-12">
-              <h2 className="mb-8 text-2xl font-semibold text-white">Domande frequenti</h2>
-              <div className="divide-y divide-border">
+            <section className="mt-20 border-t border-[var(--lettura-bordo)] pt-12">
+              <h2 className="mb-8 text-2xl font-semibold text-[var(--lettura-titolo)]">Domande frequenti</h2>
+              <div className="divide-y divide-[var(--lettura-bordo)]">
                 {post.faq.map((f, i) => (
                   <details key={i} className="group py-5" open={i === 0}>
-                    <summary className="flex cursor-pointer list-none items-start justify-between gap-4 text-base font-medium text-white">
+                    <summary className="flex cursor-pointer list-none items-start justify-between gap-4 text-base font-medium text-[var(--lettura-titolo)]">
                       <span>{f.question}</span>
                       <span aria-hidden="true"
-                        className="mt-1 shrink-0 text-neutral-600 transition-transform group-open:rotate-45">
+                        className="mt-1 shrink-0 text-[var(--lettura-tenue)] transition-transform group-open:rotate-45">
                         +
                       </span>
                     </summary>
@@ -182,12 +182,12 @@ export default async function BlogPostPage({ params }: Props) {
 
           {post.sources.length > 0 && (
             <section className="mt-14">
-              <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-neutral-600">Fonti</h2>
+              <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-[var(--lettura-tenue)]">Fonti</h2>
               <ul className="space-y-2 text-sm">
                 {post.sources.map((s, i) => (
                   <li key={i}>
                     <a href={s.url} target="_blank" rel="noopener noreferrer nofollow"
-                      className="text-neutral-400 underline underline-offset-4 transition-colors hover:text-white">
+                      className="text-neutral-400 underline underline-offset-4 transition-colors hover:text-[var(--lettura-titolo)]">
                       {s.title}
                     </a>
                   </li>
@@ -197,8 +197,8 @@ export default async function BlogPostPage({ params }: Props) {
           )}
         </article>
 
-        <section className="mt-20 border-t border-border pt-10">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-neutral-600">
+        <section className="mt-20 border-t border-[var(--lettura-bordo)] pt-10">
+          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--lettura-tenue)]">
             ELEVIACOM
           </p>
           <p className="mt-4 max-w-xl text-lg leading-relaxed text-neutral-300">
@@ -206,7 +206,7 @@ export default async function BlogPostPage({ params }: Props) {
             La valutazione iniziale è gratuita.
           </p>
           <Link href="/consulenza"
-            className="group mt-6 inline-flex items-center gap-2 border-b border-neutral-700 pb-1 text-sm text-white transition-colors hover:border-white">
+            className="group mt-6 inline-flex items-center gap-2 border-b border-neutral-700 pb-1 text-sm text-[var(--lettura-titolo)] transition-colors hover:border-white">
             Richiedi una consulenza
             <span aria-hidden="true" className="transition-transform duration-200 group-hover:translate-x-1">
               &rarr;
@@ -215,23 +215,23 @@ export default async function BlogPostPage({ params }: Props) {
         </section>
 
         {related.length > 0 && (
-          <section className="mt-16 border-t border-border pt-12">
-            <h2 className="mb-8 text-xs font-semibold uppercase tracking-wider text-neutral-600">
+          <section className="mt-16 border-t border-[var(--lettura-bordo)] pt-12">
+            <h2 className="mb-8 text-xs font-semibold uppercase tracking-wider text-[var(--lettura-tenue)]">
               Continua a leggere
             </h2>
             <div className="grid gap-6 sm:grid-cols-3">
               {related.map((r) => (
                 <Link key={r.slug} href={`/blog/${r.slug}`} className="group block">
                   {r.cover && (
-                    <div className="relative mb-3 aspect-[16/10] overflow-hidden rounded-lg border border-border">
+                    <div className="relative mb-3 aspect-[16/10] overflow-hidden rounded-lg border border-[var(--lettura-bordo)]">
                       <Image src={r.cover} alt={r.coverAlt ?? r.title} fill sizes="33vw"
                         className="object-cover transition-transform duration-500 group-hover:scale-105" />
                     </div>
                   )}
-                  <h3 className="text-sm font-medium leading-snug text-neutral-300 transition-colors group-hover:text-white">
+                  <h3 className="text-sm font-medium leading-snug text-neutral-300 transition-colors group-hover:text-[var(--lettura-titolo)]">
                     {r.title}
                   </h3>
-                  <p className="mt-1 text-xs text-neutral-600">{r.readingMinutes} min</p>
+                  <p className="mt-1 text-xs text-[var(--lettura-tenue)]">{r.readingMinutes} min</p>
                 </Link>
               ))}
             </div>

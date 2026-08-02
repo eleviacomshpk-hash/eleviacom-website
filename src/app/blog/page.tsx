@@ -38,43 +38,43 @@ export default async function BlogIndexPage() {
   };
 
   return (
-    <main className="min-h-screen bg-black text-neutral-300">
+    <main className="lettura min-h-screen text-[var(--lettura-testo)]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="mx-auto max-w-3xl px-6 py-16 md:py-24">
-        <Link href="/" className="text-sm text-neutral-500 hover:text-white transition-colors mb-8 inline-block">
+        <Link href="/" className="text-sm text-[var(--lettura-tenue)] hover:text-[var(--lettura-titolo)] transition-colors mb-8 inline-block">
           &larr; Torna alla home
         </Link>
 
-        <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">Blog</h1>
+        <h1 className="text-3xl md:text-4xl font-bold text-[var(--lettura-titolo)] mb-4">Blog</h1>
         <p className="text-neutral-400 leading-relaxed mb-12">
           Analisi, guide e casi concreti su intelligenza artificiale e automazione applicate alle PMI italiane.
         </p>
 
         {posts.length === 0 ? (
-          <p className="text-neutral-500">Nessun articolo pubblicato.</p>
+          <p className="text-[var(--lettura-tenue)]">Nessun articolo pubblicato.</p>
         ) : (
           <div className="space-y-10">
             {posts.map((post) => (
               <article key={post.slug} className="group">
                 <Link href={`/blog/${post.slug}`} className="block">
                   {post.cover && (
-                    <div className="relative mb-4 aspect-[16/9] w-full overflow-hidden rounded-lg border border-border">
+                    <div className="relative mb-4 aspect-[16/9] w-full overflow-hidden rounded-lg border border-[var(--lettura-bordo)]">
                       <Image src={post.cover} alt={post.coverAlt ?? post.title} fill
                         sizes="(max-width: 768px) 100vw, 768px"
                         className="object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
                     </div>
                   )}
-                  <div className="flex items-center gap-3 text-xs text-neutral-500 mb-2">
+                  <div className="flex items-center gap-3 text-xs text-[var(--lettura-tenue)] mb-2">
                     <time dateTime={isoDay(post.publishedAt)}>{formatDate(post.publishedAt)}</time>
                     <span aria-hidden="true">&middot;</span>
                     <span>{post.readingMinutes} min di lettura</span>
                   </div>
-                  <h2 className="text-xl md:text-2xl font-semibold text-white group-hover:text-white transition-colors">
+                  <h2 className="text-xl md:text-2xl font-semibold text-[var(--lettura-titolo)] group-hover:text-[var(--lettura-titolo)] transition-colors">
                     {post.title}
                   </h2>
                   <p className="mt-2 text-neutral-400 leading-relaxed">{post.description}</p>
                   {post.tags.length > 0 && (
-                    <div className="mt-3 flex flex-wrap items-center gap-x-2.5 text-[11px] uppercase tracking-[0.14em] text-neutral-600">
+                    <div className="mt-3 flex flex-wrap items-center gap-x-2.5 text-[11px] uppercase tracking-[0.14em] text-[var(--lettura-tenue)]">
                       {post.tags.slice(0, 3).map((tag, i) => (
                         <span key={tag} className="flex items-center gap-2.5">
                           {i > 0 && <span aria-hidden="true" className="text-neutral-800">/</span>}
