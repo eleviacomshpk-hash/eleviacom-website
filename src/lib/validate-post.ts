@@ -14,8 +14,12 @@ export type PostInput = {
   entities?: string[];
   cover?: string;
   cover_alt?: string;
+  category?: string;
   status?: string;
 };
+
+/** Le quattro schede in cima all'indice degli articoli. */
+export const CATEGORIE_VALIDE = ["ai", "normativa", "automazione", "business"] as const;
 
 export type Issue = { campo: string; livello: "errore" | "avviso"; messaggio: string };
 
@@ -29,6 +33,10 @@ export function validatePost(p: PostInput, opts: { publishing: boolean }): Issue
   if (!p.slug || !SLUG_RE.test(p.slug))
     err("slug", "Slug mancante o non valido: solo minuscole, cifre e trattini.");
   else if (p.slug.length > 70) warn("slug", "Slug oltre 70 caratteri: accorcialo.");
+
+  if (!p.category) err("category", `Categoria obbligatoria: una fra ${CATEGORIE_VALIDE.join(", ")}.`);
+  else if (!(CATEGORIE_VALIDE as readonly string[]).includes(p.category))
+    err("category", `Categoria "${p.category}" non ammessa: usa ${CATEGORIE_VALIDE.join(", ")}.`);
 
   if (!p.title) err("title", "Titolo obbligatorio.");
   const titoloSerp = p.meta_title ?? p.title;

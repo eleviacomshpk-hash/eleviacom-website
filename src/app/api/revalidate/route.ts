@@ -22,8 +22,9 @@ export async function POST(req: NextRequest) {
     /* corpo vuoto: rigenera solo le pagine comuni */
   }
 
-  const percorsi = ["/blog", "/sitemap.xml", "/llms", "/blog/rss.xml"];
-  if (slug) percorsi.push(`/blog/${slug}`);
+  // Gli articoli stanno sotto /blog/articoli/ da quando il blog e un hub.
+  const percorsi = ["/blog", "/blog/articoli", "/sitemap.xml", "/llms", "/blog/rss.xml"];
+  if (slug) percorsi.push(`/blog/articoli/${slug}`);
   percorsi.forEach((p) => revalidatePath(p));
 
   return NextResponse.json({ rigenerati: percorsi, ora: new Date().toISOString() });

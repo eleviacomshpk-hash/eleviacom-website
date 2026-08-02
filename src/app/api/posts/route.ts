@@ -67,7 +67,8 @@ export async function POST(req: NextRequest) {
     .single();
   if (error) return NextResponse.json({ errore: error.message }, { status: 500 });
 
-  ["/blog", "/sitemap.xml", "/llms", "/blog/rss.xml", `/blog/${data.slug}`].forEach((p) => revalidatePath(p));
+  ["/blog", "/blog/articoli", "/sitemap.xml", "/llms", "/blog/rss.xml", `/blog/articoli/${data.slug}`]
+    .forEach((p) => revalidatePath(p));
 
   return NextResponse.json({ salvato: data, avvisi: problemi.filter((p) => p.livello === "avviso") });
 }
