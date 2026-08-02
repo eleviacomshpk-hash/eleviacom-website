@@ -1,36 +1,54 @@
 /**
- * L'hub vive su un sottodominio: hub.eleviacom.space.
+ * L'hub è pensato per vivere su hub.eleviacom.space, ma il sottodominio
+ * si accende solo quando il record DNS e il dominio su Vercel esistono.
+ * Fino ad allora resta servito da www.eleviacom.space/blog, con gli stessi
+ * contenuti e gli stessi indirizzi interni.
  *
- * Le route dell'applicazione stanno sotto /blog/... perché il progetto Next
- * è uno solo, ma il middleware riscrive il sottodominio in modo che al
- * visitatore arrivino percorsi puliti:
+ * L'interruttore è la variabile d'ambiente NEXT_PUBLIC_HUB_ATTIVO:
  *
- *   hub.eleviacom.space/                 →  /blog
- *   hub.eleviacom.space/articoli         →  /blog/articoli
- *   hub.eleviacom.space/articoli/<slug>  →  /blog/articoli/<slug>
- *   hub.eleviacom.space/guide/<slug>     →  /blog/guide/<slug>
- *   hub.eleviacom.space/tool/<slug>      →  /blog/tool/<slug>
+ *   non impostata  →  hub su www.eleviacom.space/blog       (stato attuale)
+ *   = "1"          →  hub su hub.eleviacom.space, e i vecchi
+ *                     indirizzi /blog/... rispondono 301
  *
- * Quindi nei componenti si scrivono SEMPRE i percorsi pubblici, senza /blog.
- * In sviluppo si apre hub.localhost:3000, che risolve su 127.0.0.1.
+ * Le route dell'applicazione stanno sempre sotto /blog. Quando il
+ * sottodominio è attivo il middleware riscrive gli indirizzi puliti:
+ *
+ *   hub.eleviacom.space/guide/<slug>  →  /blog/guide/<slug>
+ *
+ * In sviluppo con l'interruttore acceso si apre hub.localhost:3000.
  */
 
-export const HUB_URL = "https://hub.eleviacom.space";
+export const HUB_ATTIVO = process.env.NEXT_PUBLIC_HUB_ATTIVO === "1";
+
 export const SITO_URL = "https://www.eleviacom.space";
+export const HUB_URL = HUB_ATTIVO ? "https://hub.eleviacom.space" : SITO_URL;
+
+/** Prefisso degli indirizzi pubblici: vuoto sul sottodominio, /blog sul sito. */
+export const PREFISSO = HUB_ATTIVO ? "" : "/blog";
 
 export const VIA = {
-  home: "/",
-  articoli: "/articoli",
-  articolo: (slug: string) => `/articoli/${slug}`,
-  guide: "/guide",
-  guida: (slug: string) => `/guide/${slug}`,
-  tool: "/tool",
-  scheda: (slug: string) => `/tool/${slug}`,
-  rss: "/rss.xml",
+  home: PREFISSO || "/",
+  articoli: `${PREFISSO}/articoli`,
+  articolo: (slug: string) => `${PREFISSO}/articoli/${slug}`,
+  guide: `${PREFISSO}/guide`,
+  guida: (slug: string) => `${PREFISSO}/guide/${slug}`,
+  tool: `${PREFISSO}/tool`,
+  scheda: (slug: string) => `${PREFISSO}/tool/${slug}`,
+  rss: `${PREFISSO}/rss.xml`,
 } as const;
 
-export function assoluto(percorso: string): string {
-  return `${HUB_URL}${percorso === "/" ? "" : percorso}`;
+/** Indirizzo assoluto di un percorso pubblico. */
+export function assoluto(via: string): string {
+  return `${HUB_URL}${via === "/" ? "" : via}`;
+}
+
+/**
+ * Percorso interno corrispondente a un indirizzo pubblico.
+ * Serve solo a capire quale voce di menu è attiva.
+ */
+export function interno(via: string): string {
+  if (!HUB_ATTIVO) return via;
+  return via === "/" ? "/blog" : `/blog${via}`;
 }
 
 const MESI = [

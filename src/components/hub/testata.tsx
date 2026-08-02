@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { VIA } from "@/lib/hub";
+import { VIA, interno } from "@/lib/hub";
 
 const VOCI = [
   { href: VIA.articoli, label: "Articoli" },
@@ -11,9 +11,8 @@ const VOCI = [
   { href: VIA.tool, label: "Tool" },
 ];
 
-/** Il pathname interno è /blog/...: lo confronto sulla coda. */
 function attiva(pathname: string, href: string) {
-  return pathname.replace(/^\/blog/, "").startsWith(href) ? "si" : "no";
+  return pathname.startsWith(interno(href)) ? "si" : "no";
 }
 
 export function Testata({ data }: { data: string }) {

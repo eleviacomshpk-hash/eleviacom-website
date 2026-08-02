@@ -1,23 +1,20 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * L'hub sta su hub.eleviacom.space e le sue route stanno sotto /blog nel
- * progetto Next. Qui si fanno due cose:
+ * Smistamento fra il sito e l'hub. Vedi src/lib/hub.ts per l'interruttore.
  *
- * 1. sul sottodominio, /qualcosa viene riscritto in /blog/qualcosa, così
- *    l'indirizzo che il visitatore vede resta pulito;
- * 2. sul dominio principale, i vecchi /blog/... vengono rimandati con un
- *    301 al sottodominio, perché l'hub abbia un solo indirizzo canonico.
+ * Con NEXT_PUBLIC_HUB_ATTIVO = "1":
+ *   hub.eleviacom.space/guide/x   → riscritto su /blog/guide/x
+ *   www.eleviacom.space/blog/...  → 301 verso il sottodominio
  *
- * In sviluppo si apre hub.localhost:3000.
+ * Senza l'interruttore (stato attuale):
+ *   l'hub resta su www.eleviacom.space/blog e l'unico intervento è il 301
+ *   dai vecchi indirizzi degli articoli, /blog/<slug> → /blog/articoli/<slug>.
  */
 
+const ATTIVO = process.env.NEXT_PUBLIC_HUB_ATTIVO === "1";
 const HUB = "https://hub.eleviacom.space";
-const SEZIONI = new Set(["articoli", "guide", "tool"]);
-
-function eSottodominioHub(host: string): boolean {
-  return host.startsWith("hub.");
-}
+const SEZIONI = new Set(["articoli", "guide", "tool", "rss.xml"]);
 
 export function middleware(req: NextRequest) {
   const host = (req.headers.get("host") ?? "").toLowerCase();
@@ -28,35 +25,42 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  if (eSottodominioHub(host)) {
-    // sitemap e robots del sottodominio hanno un contenuto proprio
+  const suHub = ATTIVO && host.startsWith("hub.");
+
+  if (suHub) {
     if (pathname === "/sitemap.xml") return riscrivi(req, "/hub-sitemap.xml");
     if (pathname === "/robots.txt") return riscrivi(req, "/hub-robots.txt");
     if (pathname === "/rss.xml") return riscrivi(req, "/blog/rss.xml");
 
-    // già riscritto o richiesto a mano: riporta all'indirizzo pulito
+    // Richiesto a mano l'indirizzo interno: riporta a quello pulito.
     if (pathname === "/blog" || pathname.startsWith("/blog/")) {
-      return NextResponse.redirect(new URL(`${HUB}${pubblico(pathname)}${search}`), 308);
+      return NextResponse.redirect(new URL(`${HUB}${pulito(pathname)}${search}`), 308);
     }
 
     return riscrivi(req, pathname === "/" ? "/blog" : `/blog${pathname}`);
   }
 
-  // Dominio principale: l'hub ha traslocato.
+  // Dominio principale.
   if (pathname === "/blog" || pathname.startsWith("/blog/")) {
-    return NextResponse.redirect(new URL(`${HUB}${pubblico(pathname)}${search}`), 301);
+    if (ATTIVO) {
+      return NextResponse.redirect(new URL(`${HUB}${pulito(pathname)}${search}`), 301);
+    }
+    // Vecchio indirizzo di un articolo: ora sta sotto /blog/articoli/.
+    const parti = pathname.split("/").filter(Boolean); // ["blog", "<slug>"]
+    if (parti.length === 2 && !SEZIONI.has(parti[1])) {
+      return NextResponse.redirect(new URL(`/blog/articoli/${parti[1]}${search}`, req.url), 301);
+    }
   }
 
   return NextResponse.next();
 }
 
 /** /blog/guide/x → /guide/x · /blog/<slug> → /articoli/<slug> · /blog → / */
-function pubblico(pathname: string): string {
+function pulito(pathname: string): string {
   const resto = pathname.replace(/^\/blog/, "");
   if (resto === "" || resto === "/") return "/";
   const primo = resto.split("/")[1] ?? "";
-  if (SEZIONI.has(primo) || primo === "rss.xml") return resto;
-  return `/articoli${resto}`;
+  return SEZIONI.has(primo) ? resto : `/articoli${resto}`;
 }
 
 function riscrivi(req: NextRequest, destinazione: string) {
