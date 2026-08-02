@@ -53,7 +53,7 @@ export default async function BlogIndexPage() {
         {posts.length === 0 ? (
           <p className="text-[var(--lettura-tenue)]">Nessun articolo pubblicato.</p>
         ) : (
-          <div className="grid gap-7 sm:grid-cols-2">
+          <div className="space-y-8">
             {posts.map((post) => (
               <article
                 key={post.slug}
