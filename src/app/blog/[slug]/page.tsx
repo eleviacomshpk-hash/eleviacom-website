@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { getAllPostsMeta, getPost, formatDate, isoDay, SITE_URL } from "@/lib/blog";
 import { ReadingProgress } from "@/components/blog/reading-progress";
 import { TableOfContents } from "@/components/blog/table-of-contents";
+import { BlogHeader } from "@/components/blog/blog-header";
 
 export const revalidate = 300;
 export const dynamicParams = true;
@@ -95,6 +96,7 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <main className="lettura min-h-screen text-[var(--lettura-testo)]">
+      <BlogHeader />
       <ReadingProgress />
       <script type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@graph": graph }) }} />
@@ -109,9 +111,9 @@ export default async function BlogPostPage({ params }: Props) {
       )}
 
       <div className="mx-auto w-full max-w-6xl px-6 pb-24 pt-10">
-        <Link href="/blog"
+        <Link href="/blog/articoli"
           className="mb-8 inline-block text-sm text-[var(--lettura-tenue)] transition-colors hover:text-[var(--lettura-titolo)]">
-          &larr; Torna al blog
+          &larr; Tutti gli articoli
         </Link>
 
         <div className="gap-14 xl:grid xl:grid-cols-[minmax(0,1fr)_15rem]">

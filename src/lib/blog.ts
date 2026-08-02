@@ -14,6 +14,8 @@ export type PostMeta = {
   description: string;
   author: string;
   tags: string[];
+  /** Categoria editoriale: alimenta le schede di filtro dell'indice. */
+  category: string;
   publishedAt: string;
   updatedAt: string;
   cover?: string;
@@ -74,6 +76,7 @@ function toMeta(r: Row): PostMeta {
     description: String(r.description ?? ""),
     author: String(r.author ?? "ELEVIACOM"),
     tags: (r.tags as string[]) ?? [],
+    category: String(r.category ?? "ai"),
     publishedAt: String(r.published_at ?? r.created_at ?? ""),
     updatedAt: String(r.updated_at ?? r.published_at ?? ""),
     cover: (r.cover as string) ?? undefined,
