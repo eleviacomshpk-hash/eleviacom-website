@@ -31,6 +31,7 @@ export function middleware(req: NextRequest) {
     if (pathname === "/sitemap.xml") return riscrivi(req, "/hub-sitemap.xml");
     if (pathname === "/robots.txt") return riscrivi(req, "/hub-robots.txt");
     if (pathname === "/rss.xml") return riscrivi(req, "/blog/rss.xml");
+    if (pathname === "/llms.txt") return riscrivi(req, "/hub-llms.txt");
 
     // Richiesto a mano l'indirizzo interno: riporta a quello pulito.
     if (pathname === "/blog" || pathname.startsWith("/blog/")) {
